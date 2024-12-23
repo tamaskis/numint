@@ -10,7 +10,7 @@
 #![warn(missing_docs)]
 
 // Linking project modules.
-pub(crate) mod module;
+pub(crate) mod state;
 
 // Re-exports.
-pub use crate::module::example_function;
+pub use crate::state::State;

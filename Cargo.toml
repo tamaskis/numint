@@ -14,6 +14,7 @@ exclude = ["Cargo.lock", ".github/", ".vscode/", ".gitignore"]
 rustdoc-args = [ "--html-in-header", "src/docs-header.html" ]
 
 [dependencies]
+linalg-traits = "0.7.5"
 
 [dev-dependencies]
 numtest = "0.1.6"
