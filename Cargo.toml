@@ -1,11 +1,11 @@
 [package]
-name = "todo-crate-name"
+name = "numint"
 version = "0.1.0"
 authors = ["Tamas Kis"]
 edition = "2021"
-description = "TODO_DESCRIPTION"
-documentation = "https://docs.rs/TODO_CRATE_NAME_WITH_DASHES"
-repository = "https://github.com/tamaskis/TODO_REPO"
+description = "ODE solvers and numerical integration in Rust."
+documentation = "https://docs.rs/numint"
+repository = "https://github.com/tamaskis/numint"
 license = "MIT OR Apache-2.0"
 
 exclude = ["Cargo.lock", ".github/", ".vscode/", ".gitignore"]
