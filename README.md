@@ -1,14 +1,14 @@
-# TODO_CRATE_NAME_WITH_DASHES
+# numint
 
-[<img alt="github" src="https://img.shields.io/badge/github-tamaskis/TODO_REPO-8da0cb?style=for-the-badge&labelColor=555555&logo=github" height="20">](https://github.com/tamaskis/TODO_REPO)
-[<img alt="crates.io" src="https://img.shields.io/crates/v/TODO_CRATE_NAME_WITH_DASHES.svg?style=for-the-badge&color=fc8d62&logo=rust" height="20">](https://crates.io/crates/TODO_CRATE_NAME_WITH_DASHES)
-[<img alt="docs.rs" src="https://img.shields.io/badge/docs.rs-TODO_CRATE_NAME_WITH_UNDERSCORES-66c2a5?style=for-the-badge&labelColor=555555&logo=docs.rs" height="20">](https://docs.rs/TODO_CRATE_NAME_WITH_DASHES)
+[<img alt="github" src="https://img.shields.io/badge/github-tamaskis/numint-8da0cb?style=for-the-badge&labelColor=555555&logo=github" height="20">](https://github.com/tamaskis/numint)
+[<img alt="crates.io" src="https://img.shields.io/crates/v/numint.svg?style=for-the-badge&color=fc8d62&logo=rust" height="20">](https://crates.io/crates/numint)
+[<img alt="docs.rs" src="https://img.shields.io/badge/docs.rs-numint-66c2a5?style=for-the-badge&labelColor=555555&logo=docs.rs" height="20">](https://docs.rs/numint)
 
-TODO_DESCRIPTION
+ODE solvers and numerical integration in Rust.
 
 ## Documentation
 
-Please see https://docs.rs/TODO_CRATE_NAME_WITH_DASHES.
+Please see https://docs.rs/numint.
 
 ## Examples
 
