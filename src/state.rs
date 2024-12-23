@@ -14,6 +14,27 @@ pub trait State {
 
 // TODO: make a macro to automate these implementations
 
+impl State for f64 {
+    fn add(&self, other: &Self) -> Self {
+        self + other
+    }
+    fn add_assign(&mut self, other: &Self) {
+        *self += other;
+    }
+    fn sub(&self, other: &Self) -> Self {
+        self - other
+    }
+    fn sub_assign(&mut self, other: &Self) {
+        *self -= other
+    }
+    fn mul(&self, scalar: f64) -> Self {
+        self * scalar
+    }
+    fn mul_assign(&mut self, scalar: f64) {
+        *self *= scalar
+    }
+}
+
 impl State for Vec<f64> {
     fn add(&self, other: &Self) -> Self {
         <Self as Vector<f64>>::add(self, other)

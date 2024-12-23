@@ -1,9 +1,5 @@
 use crate::state::State;
 
-pub enum Method {
-    EULER,
-}
-
 /// | Dependent Variable Type | Function Signature | ODE Form |
 ///     | ----------------------- | ------------------ | -------- |
 ///     | scalar | $f:\mathbb{R}\times\mathbb{R}\to\mathbb{R}$ | $\dfrac{dy}{dt}=f(t,y)$ |
@@ -16,7 +12,7 @@ pub enum Method {
 ///
 /// * Before this method called, the state corresponds to the current sample time, `t`.
 /// * After this method is called, the state corresponds to the next sample time, `t + h`.
-pub trait Propagate<T: State> {
+pub trait IntegrationMethod<T: State> {
     /// Propagate the state vector forward one time step using the Euler (first-order) method.
     ///
     /// # Arguments
@@ -24,20 +20,45 @@ pub trait Propagate<T: State> {
     /// * `f` - Multivariate function defining the ordinary differential equation, `dy/dt = f(t,y)`.
     /// * `t` - Current sample time.
     /// * `h` - Step size.
-    fn propagate(&mut self, f: &impl Fn(f64, &Self) -> Self, t: f64, h: f64, method: Method) {
-        match method {
-            Method::EULER => self.rk1_euler(f, t, h),
-        }
-    }
-
-    #[allow(missing_docs)]
-    fn rk1_euler(&mut self, f: &impl Fn(f64, &Self) -> Self, t: f64, h: f64);
+    fn propagate(f: &impl Fn(f64, &T) -> T, y: &mut T, t: f64, h: f64);
 }
 
-impl<T: State> Propagate<T> for T {
-    fn rk1_euler(&mut self, f: &impl Fn(f64, &T) -> T, t: f64, h: f64) {
-        let mut f_eval = f(t, self);
+pub struct Euler;
+
+impl<T: State> IntegrationMethod<T> for Euler {
+    fn propagate(f: &impl Fn(f64, &T) -> T, y: &mut T, t: f64, h: f64) {
+        let mut f_eval = f(t, y);
         f_eval.mul_assign(h);
-        self.add_assign(&f_eval);
+        y.add_assign(&f_eval);
+    }
+}
+
+fn propagate<T: State, M: IntegrationMethod<T>>(
+    f: &impl Fn(f64, &T) -> T,
+    y: &mut T,
+    t: f64,
+    h: f64,
+) {
+    M::propagate(f, y, t, h);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_euler_scalar() {
+        let f = |_t: f64, x: &f64| -2.0 * x;
+        // Initial state: y(0) = 1.0
+        let mut y = 1.0;
+        let t = 0.0; // Initial time
+        let h = 0.1; // Time step
+
+        // Propagate using Euler method
+        propagate::<f64, Euler>(&f, &mut y, t, h);
+
+        // After one step, the value should be updated based on dy/dt = -2y
+        // For Euler: y(0.1) = y(0) + h * f(t, y) = 1.0 + 0.1 * (-2.0 * 1.0) = 1.0 - 0.2 = 0.8
+        assert!((y - 0.8).abs() < 1e-6);
     }
 }
