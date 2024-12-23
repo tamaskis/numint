@@ -29,7 +29,7 @@ pub trait IntegrationMethod<T: State> {
     /// * Before this method called, `y` corresponds to the state at the current sample time, `t`.
     /// * After this method is called, `y` corresponds to the state at the next sample time,
     ///   `t + h`.
-    fn propagate(f: &impl Fn(f64, &T) -> T, y: &mut T, t: f64, h: f64);
+    fn propagate(f: &impl Fn(f64, &T) -> T, t: f64, h: f64, y: &mut T);
 }
 
 /// Euler (1st-order Runge-Kutta) method.
@@ -37,7 +37,7 @@ pub trait IntegrationMethod<T: State> {
 pub struct Euler;
 
 impl<T: State> IntegrationMethod<T> for Euler {
-    fn propagate(f: &impl Fn(f64, &T) -> T, y: &mut T, t: f64, h: f64) {
+    fn propagate(f: &impl Fn(f64, &T) -> T, t: f64, h: f64, y: &mut T) {
         let mut f_eval = f(t, y);
         f_eval.mul_assign(h);
         y.add_assign(&f_eval);
@@ -50,7 +50,7 @@ fn propagate<T: State, M: IntegrationMethod<T>>(
     t: f64,
     h: f64,
 ) {
-    M::propagate(f, y, t, h);
+    M::propagate(f, t, h, y);
 }
 
 #[cfg(test)]

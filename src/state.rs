@@ -1,6 +1,6 @@
 use linalg_traits::{Mat, Matrix, Vector};
 
-pub trait State {
+pub trait State: Clone {
     fn add(&self, other: &Self) -> Self;
     fn add_assign(&mut self, other: &Self);
     fn sub(&self, other: &Self) -> Self;
