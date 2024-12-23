@@ -15,6 +15,7 @@ rustdoc-args = [ "--html-in-header", "src/docs-header.html" ]
 
 [dependencies]
 linalg-traits = "0.7.5"
+num-traits = "0.2.19"
 
 [dev-dependencies]
 numtest = "0.1.6"

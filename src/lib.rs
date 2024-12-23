@@ -10,7 +10,7 @@
 #![warn(missing_docs)]
 
 // Linking project modules.
-pub(crate) mod state;
+pub(crate) mod runge_kutta;
 
 // Re-exports.
-pub use crate::state::State;
+pub use crate::runge_kutta::rk1_euler;
