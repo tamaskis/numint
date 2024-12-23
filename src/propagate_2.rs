@@ -23,6 +23,8 @@ pub trait IntegrationMethod<T: State> {
     fn propagate(f: &impl Fn(f64, &T) -> T, y: &mut T, t: f64, h: f64);
 }
 
+/// Euler (1st-order Runge-Kutta) method.
+#[allow(dead_code)]
 pub struct Euler;
 
 impl<T: State> IntegrationMethod<T> for Euler {
