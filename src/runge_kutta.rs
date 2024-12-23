@@ -5,7 +5,7 @@ where
     S: Scalar,
     V: Vector<S>,
 {
-    let mut f_eval = f(t, &y);
+    let mut f_eval = f(t, y);
     f_eval.mul_assign(h);
     y.add_assign(&f_eval);
 }
