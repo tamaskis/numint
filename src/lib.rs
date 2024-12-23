@@ -9,8 +9,15 @@
 // Linter setup.
 #![warn(missing_docs)]
 
-// Linking project modules.
-pub(crate) mod module;
+// Module declarations.
+pub(crate) mod integration_methods;
+pub(crate) mod ode_state;
+pub(crate) mod solution;
+pub(crate) mod solve_ivp;
 
 // Re-exports.
-pub use crate::module::example_function;
+pub use crate::integration_methods::integration_method_trait::IntegrationMethod;
+pub use crate::integration_methods::runge_kutta::Euler;
+pub use crate::ode_state::ode_state_trait::{OdeState, StateIndex};
+pub use crate::solution::Solution;
+pub use crate::solve_ivp::solve_ivp;

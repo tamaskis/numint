@@ -10,14 +10,6 @@ ODE solvers and numerical integration in Rust.
 
 Please see https://docs.rs/numint.
 
-## Examples
-
-TODO Simple examples demonstrating the functionality of the package can be included here.
-
-```rust
-// TODO
-```
-
 #### License
 
 <sup>
