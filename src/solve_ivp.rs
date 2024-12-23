@@ -12,11 +12,12 @@ pub fn solve_ivp<T: State, M: IntegrationMethod<T>>(
     // Note this also stores initial condition TODO cleanup
     let mut sol = Solution::new(y0, t0, tf, h);
 
+    // Solution at the current sample time.
     let mut y = y0.clone();
 
-    // TODO
+    // Solve the initial value problem.
     for i in 1..sol.t.len() {
-        // Update current sample time.
+        // Update the current sample time.
         sol.t[i] = t0 + (i as f64) * h;
 
         // Adjust the time step for the last step.
@@ -24,11 +25,12 @@ pub fn solve_ivp<T: State, M: IntegrationMethod<T>>(
             h = tf - sol.t[i - 1];
         }
 
-        // Propagate state to current sample time.
+        // Propagate the state to the  current sample time.
         M::propagate(f, sol.t[i - 1], h, &mut y);
+
+        // Store the solution at the current sample time.
+        sol.y[i] = y.clone();
     }
 
     sol
-
-    // Initialize the vector to store the solution at each sample time.
 }
