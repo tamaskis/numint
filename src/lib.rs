@@ -9,10 +9,11 @@
 // Linter setup.
 #![warn(missing_docs)]
 
-// Linking project modules.
+// Module declarations
 pub(crate) mod propagate;
 pub(crate) mod propagate_old;
 pub(crate) mod runge_kutta;
+pub(crate) mod solution;
 pub(crate) mod state;
 
 // Re-exports.
