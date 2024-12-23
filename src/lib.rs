@@ -11,6 +11,7 @@
 
 // Linking project modules.
 pub(crate) mod runge_kutta;
+pub(crate) mod state;
 
 // Re-exports.
 pub use crate::runge_kutta::rk1_euler;
