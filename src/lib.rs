@@ -20,4 +20,5 @@ pub(crate) mod state;
 // Re-exports.
 pub use crate::propagate_old::Propagate;
 pub use crate::runge_kutta::rk1_euler;
+pub use crate::solve_ivp::solve_ivp;
 pub use crate::state::State;
