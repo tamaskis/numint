@@ -17,7 +17,7 @@ pub trait IntegrationMethod<T: State> {
     ///
     /// # Arguments
     ///
-    /// * `f` - Multivariate function defining the ordinary differential equation, `dy/dt = f(t,y)`.
+    /// * `f` - Function defining the ordinary differential equation, `dy/dt = f(t,y)`.
     /// * `t` - Current sample time.
     /// * `h` - Step size.
     /// * `y` - Current state (i.e. solution at the current sample time).

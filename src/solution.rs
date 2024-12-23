@@ -1,8 +1,8 @@
 use crate::state::State;
 
 pub struct InitialConditions<T: State> {
-    t0: f64,
-    y0: T,
+    pub(crate) t0: f64,
+    pub(crate) y0: T,
 }
 
 pub struct Solution<T: State> {
