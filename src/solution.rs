@@ -1,5 +1,10 @@
 use crate::state::State;
 
+pub struct InitialConditions<T: State> {
+    t0: f64,
+    y0: T,
+}
+
 pub struct Solution<T: State> {
     // Time vector (length-`N`).
     pub(crate) t: Vec<f64>,
