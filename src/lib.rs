@@ -14,6 +14,7 @@ pub(crate) mod propagate;
 pub(crate) mod propagate_old;
 pub(crate) mod runge_kutta;
 pub(crate) mod solution;
+pub(crate) mod solve_ivp;
 pub(crate) mod state;
 
 // Re-exports.
