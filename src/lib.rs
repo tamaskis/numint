@@ -10,6 +10,7 @@
 #![warn(missing_docs)]
 
 // Linking project modules.
+pub(crate) mod propagate;
 pub(crate) mod runge_kutta;
 pub(crate) mod state;
 
