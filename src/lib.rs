@@ -11,11 +11,11 @@
 
 // Linking project modules.
 pub(crate) mod propagate;
-pub(crate) mod propagate_2;
+pub(crate) mod propagate_old;
 pub(crate) mod runge_kutta;
 pub(crate) mod state;
 
 // Re-exports.
-pub use crate::propagate::Propagate;
+pub use crate::propagate_old::Propagate;
 pub use crate::runge_kutta::rk1_euler;
 pub use crate::state::State;
