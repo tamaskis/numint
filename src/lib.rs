@@ -15,4 +15,6 @@ pub(crate) mod runge_kutta;
 pub(crate) mod state;
 
 // Re-exports.
+pub use crate::propagate::Propagate;
 pub use crate::runge_kutta::rk1_euler;
+pub use crate::state::State;
