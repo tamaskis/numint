@@ -2,12 +2,7 @@ use linalg_traits::Vector;
 
 use crate::ode_state::ode_state_trait::{OdeState, StateIndex};
 
-// TODO: something to indicate that the solution has been written to, e.g. that the vector actually
-// wrote to something
-
 /// Solution of an ordinary differential equation `dy/dt = f(t,y)`.
-///
-/// TODO: note on possible ODE types
 pub struct Solution<T: OdeState> {
     /// Time vector (length-`N`).
     ///
