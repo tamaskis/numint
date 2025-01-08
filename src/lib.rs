@@ -31,7 +31,8 @@
 //!
 //! | Integration Method | Implementation |
 //! | ------------------ | -------------- |
-//! | Euler (1st-Order Runge-Kutta) | [`Euler`] |
+//! | Euler (Runge-Kutta First-Order) Method | [`Euler`] |
+//! | (Classic) Runge-Kutta Fourth-Order Method | [`RK4`] |
 //!
 //! # The [`OdeState`] trait
 //!
@@ -64,7 +65,7 @@ pub(crate) mod solve_ivp;
 
 // Re-exports.
 pub use crate::integration_methods::integration_method_trait::IntegrationMethod;
-pub use crate::integration_methods::runge_kutta::Euler;
+pub use crate::integration_methods::runge_kutta::{Euler, RK4};
 pub use crate::ode_state::ode_state_trait::{OdeState, StateIndex};
 pub use crate::solution::Solution;
 pub use crate::solve_ivp::solve_ivp;
