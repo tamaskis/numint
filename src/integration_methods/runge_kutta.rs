@@ -29,6 +29,23 @@ impl<T: OdeState> IntegrationMethod<T> for RK2 {
     }
 }
 
+/// Heun's second-order method (Runge-Kutta second-order).
+#[allow(dead_code)]
+pub struct RK2Heun;
+
+impl<T: OdeState> IntegrationMethod<T> for RK2Heun {
+    fn propagate(f: &impl Fn(f64, &T) -> T, t: f64, h: f64, y: &mut T) {
+        // k₁ = f(tₙ, yₙ)
+        let k1 = f(t, y);
+
+        // k₂ = f(tₙ + h, yₙ + hk₁/2)
+        let k2 = f(t + h, &y.add(&k1.mul(h)));
+
+        // yₙ₊₁ = yₙ + (h/2)(k₁ + k₂)
+        y.add_assign(&k1.add(&k2).mul(h / 2.0));
+    }
+}
+
 /// Classic Runge-Kutta fourth-order method.
 pub struct RK4;
 
@@ -70,7 +87,7 @@ mod tests {
     /// * If the ODE state after one propagation does not equal `y_exp`.
     fn rkx_test_helper<T: IntegrationMethod<f64>>(y_exp: f64) {
         // Function defining the ODE.
-        let f = |t: f64, x: &f64| -2.0 * x + t;
+        let f = |t: f64, x: &f64| -2.0 * x + t.powi(2);
 
         // Current state.
         let mut y = 1.0;
@@ -95,11 +112,16 @@ mod tests {
 
     #[test]
     fn test_rk2() {
-        rkx_test_helper::<RK2>(0.825);
+        rkx_test_helper::<RK2>(0.8202499999999999);
+    }
+
+    #[test]
+    fn test_rk2_heun() {
+        rkx_test_helper::<RK2Heun>(0.8205);
     }
 
     #[test]
     fn test_rk4() {
-        rkx_test_helper::<RK4>(0.8234166666666667);
+        rkx_test_helper::<RK4>(0.8190508333333333);
     }
 }
