@@ -38,11 +38,28 @@ impl<T: OdeState> IntegrationMethod<T> for RK2Heun {
         // k₁ = f(tₙ, yₙ)
         let k1 = f(t, y);
 
-        // k₂ = f(tₙ + h, yₙ + hk₁/2)
+        // k₂ = f(tₙ + h, yₙ + (hk₁/2))
         let k2 = f(t + h, &y.add(&k1.mul(h)));
 
         // yₙ₊₁ = yₙ + (h/2)(k₁ + k₂)
         y.add_assign(&k1.add(&k2).mul(h / 2.0));
+    }
+}
+
+/// Ralston's second-order method (Runge-Kutta second-order).
+#[allow(dead_code)]
+pub struct RK2Ralston;
+
+impl<T: OdeState> IntegrationMethod<T> for RK2Ralston {
+    fn propagate(f: &impl Fn(f64, &T) -> T, t: f64, h: f64, y: &mut T) {
+        // k₁ = f(tₙ, yₙ)
+        let k1 = f(t, y);
+
+        // k₂ = f(tₙ + (2h/3), yₙ + (2hk₁/3))
+        let k2 = f(t + (2.0 * h / 3.0), &y.add(&k1.mul(2.0 * h / 3.0)));
+
+        // yₙ₊₁ = yₙ + (h/4)(k₁ + 3k₂)
+        y.add_assign(&k1.add(&k2.mul(3.0)).mul(h / 4.0));
     }
 }
 
@@ -118,6 +135,11 @@ mod tests {
     #[test]
     fn test_rk2_heun() {
         rkx_test_helper::<RK2Heun>(0.8205);
+    }
+
+    #[test]
+    fn test_rk2_ralston() {
+        rkx_test_helper::<RK2Ralston>(0.8203333333333334);
     }
 
     #[test]
