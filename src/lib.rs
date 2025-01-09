@@ -29,10 +29,21 @@
 //!
 //! # Integration Methods
 //!
-//! | Integration Method | Implementation |
-//! | ------------------ | -------------- |
-//! | Euler (Runge-Kutta First-Order) Method | [`Euler`] |
-//! | (Classic) Runge-Kutta Fourth-Order Method | [`RK4`] |
+//! ## Runge-Kutta Methods
+//!
+//! | Integration Method | Order | Implementation |
+//! | ------------------ | ----- | -------------- |
+//! | Euler Method | 2 | [`Euler`] |
+//! | Midpoint Method | 2 | [`RK2`] |
+//! | Heun's Second-Order Method | 2 | [`RK2Heun`] |
+//! | Ralston's Second-Order Method | 2 | [`RK2Ralston`] |
+//! | Classic (Kutta's) Third-Order method | 2 | [`RK3`] |
+//! | Heun's Third-Order Method | 3 | [`RK3Heun`] |
+//! | Ralston's Third-Order Method | 3 | [`RK3Ralston`] |
+//! | Strong Stability Preserving Runge-Kutta Third-Order Method | 3 | [`SSPRK3`] |
+//! | (Classic) Runge-Kutta Fourth-Order Method | 4 | [`RK4`] |
+//! | Ralston's Fourth-Order Method | 4 | [`RK4Ralston`] |
+//! | 3/8 Rule Fourth Order Method | 4 | [`RK438`] |
 //!
 //! # The [`OdeState`] trait
 //!
@@ -65,7 +76,9 @@ pub(crate) mod solve_ivp;
 
 // Re-exports.
 pub use crate::integration_methods::integration_method_trait::IntegrationMethod;
-pub use crate::integration_methods::runge_kutta::{Euler, RK4};
+pub use crate::integration_methods::runge_kutta::{
+    Euler, RK2Heun, RK2Ralston, RK3Heun, RK3Ralston, RK4Ralston, RK2, RK3, RK4, RK438, SSPRK3,
+};
 pub use crate::ode_state::ode_state_trait::{OdeState, StateIndex};
 pub use crate::solution::Solution;
 pub use crate::solve_ivp::solve_ivp;
