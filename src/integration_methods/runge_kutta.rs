@@ -63,6 +63,25 @@ impl<T: OdeState> IntegrationMethod<T> for RK2Ralston {
     }
 }
 
+/// Classic (Kutta's) third-order method.
+pub struct RK3;
+
+impl<T: OdeState> IntegrationMethod<T> for RK3 {
+    fn propagate(f: &impl Fn(f64, &T) -> T, t: f64, h: f64, y: &mut T) {
+        // k₁ = f(tₙ, yₙ)
+        let k1 = f(t, y);
+
+        // k₂ = f(tₙ + (h/2), yₙ + (hk₁/2))
+        let k2 = f(t + (h / 2.0), &y.add(&k1.mul(h / 2.0)));
+
+        // k₃ = f(tₙ + h, yₙ - hk₁ + 2hk₂)
+        let k3 = f(t + (h / 2.0), &y.sub(&k1.mul(h)).add(&k2.mul(2.0 * h)));
+
+        // yₙ₊₁ = yₙ = (h/6)(k₁ + 4k₂ + k₃)
+        y.add_assign(&(k1.add(&k2.mul(4.0)).add(&k3)).mul(h / 6.0));
+    }
+}
+
 /// Classic Runge-Kutta fourth-order method.
 pub struct RK4;
 
@@ -140,6 +159,11 @@ mod tests {
     #[test]
     fn test_rk2_ralston() {
         rkx_test_helper::<RK2Ralston>(0.8203333333333334);
+    }
+
+    #[test]
+    fn test_rk3() {
+        rkx_test_helper::<RK3>(0.8188583333333334);
     }
 
     #[test]
