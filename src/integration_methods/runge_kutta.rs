@@ -1,7 +1,7 @@
 pub use crate::integration_methods::integration_method_trait::IntegrationMethod;
 pub use crate::ode_state::ode_state_trait::OdeState;
 
-/// Euler (1st-order Runge-Kutta) method.
+/// Euler method (Runge-Kutta first-order).
 #[allow(dead_code)]
 pub struct Euler;
 
@@ -12,7 +12,24 @@ impl<T: OdeState> IntegrationMethod<T> for Euler {
     }
 }
 
-/// (Classic) Runge-Kutta fourth-order method.
+/// Midpoint method (Runge-Kutta second-order).
+#[allow(dead_code)]
+pub struct RK2;
+
+impl<T: OdeState> IntegrationMethod<T> for RK2 {
+    fn propagate(f: &impl Fn(f64, &T) -> T, t: f64, h: f64, y: &mut T) {
+        // k₁ = f(tₙ, yₙ)
+        let k1 = f(t, y);
+
+        // k₂ = f(tₙ + (h/2), yₙ + (hk₁/2))
+        let k2 = f(t + (h / 2.0), &y.add(&k1.mul(h / 2.0)));
+
+        // yₙ₊₁ = yₙ + hk₂
+        y.add_assign(&k2.mul(h));
+    }
+}
+
+/// Classic Runge-Kutta fourth-order method.
 pub struct RK4;
 
 impl<T: OdeState> IntegrationMethod<T> for RK4 {
@@ -74,6 +91,11 @@ mod tests {
     #[test]
     fn test_euler() {
         rkx_test_helper::<Euler>(0.8);
+    }
+
+    #[test]
+    fn test_rk2() {
+        rkx_test_helper::<RK2>(0.825);
     }
 
     #[test]
