@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 /// Index for indexing into ODE state.
 #[derive(Copy, Clone)]
 pub enum StateIndex {
@@ -45,7 +47,7 @@ pub enum StateIndex {
 /// There is nothing restricting types from implementing a combination of these three traits, so the
 /// compiler will not allow blanket implementations binding to these traits to avoid any potential
 /// conflicting implementations.
-pub trait OdeState: Clone {
+pub trait OdeState: Clone + Debug {
     /// Addition (`self + other`).
     ///
     /// # Arguments
