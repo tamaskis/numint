@@ -1,16 +1,26 @@
 [package]
 name = "numint"
-version = "0.1.2"
+version = "0.2.0-beta.0"
 authors = ["Tamas Kis"]
-edition = "2021"
+edition = "2024"
 description = "ODE solvers and numerical integration in Rust."
 documentation = "https://docs.rs/numint"
 repository = "https://github.com/tamaskis/numint"
 license = "MIT OR Apache-2.0"
 
-exclude = ["Cargo.lock", ".github/", ".vscode/", ".gitignore"]
+exclude = [".gitignore", ".github/", ".vscode/", "Cargo.lock", "book/"]
+
+[package.metadata.docs.rs]
+rustdoc-args = [ "--html-in-header", "src/docs-header.html" ]
+features = ["faer", "nalgebra", "ndarray"]
 
 [features]
+faer = [
+    "dep:faer", # enabling faer in this crate
+    "dep:faer-traits", # enabling faer-traits in this crate
+    "linalg-traits/faer", # enabling faer in linalg-traits
+    "linalg-traits/faer-traits" # enabling faer-traits in linalg-traits
+]
 nalgebra = [
     "dep:nalgebra", # enabling nalgebra in this crate
     "linalg-traits/nalgebra" # enabling nalgebra in linalg-traits
@@ -20,15 +30,14 @@ ndarray = [
     "linalg-traits/ndarray" # enabling ndarray in linalg-traits
 ]
 
-[package.metadata.docs.rs]
-rustdoc-args = [ "--html-in-header", "src/docs-header.html" ]
-features = ["nalgebra", "ndarray"]
-
 [dependencies]
-linalg-traits = "0.9.1"
-nalgebra = { version = "0.33.0", optional = true }
-ndarray = { version = "0.16.0", optional = true }
+linalg-traits = "0.12.0"
+faer = { version = "0.22.6", optional = true }
+faer-traits = { version = "0.22.1", optional = true }
+nalgebra = { version = "0.33.2", optional = true }
+ndarray = { version = "0.16.1", optional = true }
 num-traits = "0.2.19"
+rootfinder = "0.4.0"
 
 [dev-dependencies]
-numtest = "0.1.6"
+numtest = "0.3.0"

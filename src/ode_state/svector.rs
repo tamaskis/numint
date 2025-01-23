@@ -7,7 +7,7 @@
 /// # Arguments
 ///
 /// * `$type:ident` - Type to implement the [`crate::OdeState`] trait for. Do not include any type
-///                   parameters (e.g. use `SVector` instead of `SVector<f64, N>`).
+///   parameters (e.g. use `SVector` instead of `SVector<f64, N>`).
 ///
 /// # Warning
 ///

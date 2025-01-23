@@ -91,8 +91,8 @@ impl<T: OdeState> Solution<T> {
     ///
     /// # Type Parameters
     ///
-    /// * `V` - The type of vector to use to store the time history of the requested state variable.
-    ///         This type must implement the [`Vector`] trait.
+    /// * `V` - Vector type to use to store the time history of the requested state variable. This
+    ///   type must implement the [`Vector`] trait.
     ///
     /// # Arguments
     ///
@@ -114,7 +114,7 @@ impl<T: OdeState> Solution<T> {
     /// let t0 = 0.0;
     /// let tf = 1.0;
     /// let h = 0.1;
-    /// let sol = solve_ivp::<Vec<f64>, Euler>(&f, t0, &y0, tf, h);
+    /// let sol = solve_ivp::<Vec<f64>, Euler>(&f, t0, &y0, tf, h, None);
     ///
     /// // Get the time history of the y₁, where y = (y₀,y₁)ᵀ.
     /// let idx = StateIndex::Vector(1);
@@ -142,7 +142,7 @@ impl<T: OdeState> Solution<T> {
     /// let t0 = 0.0;
     /// let tf = 1.0;
     /// let h = 0.1;
-    /// let sol = solve_ivp::<SMatrix<f64, 2, 2>, Euler>(&f, t0, &y0, tf, h);
+    /// let sol = solve_ivp::<SMatrix<f64, 2, 2>, Euler>(&f, t0, &y0, tf, h, None);
     ///
     /// // Get the time history of y₁₀, where y = ((y₀₀,y₀₁), (y₁₀,y₁₁)).
     /// let idx = StateIndex::Matrix(1, 0);
@@ -161,7 +161,7 @@ impl<T: OdeState> Solution<T> {
     /// let t0 = 0.0;
     /// let tf = 3.0;
     /// let h = 1.0;
-    /// let sol = solve_ivp::<f64, Euler>(&f, t0, &y0, tf, h);
+    /// let sol = solve_ivp::<f64, Euler>(&f, t0, &y0, tf, h, None);
     ///
     /// // Get the time history of the only state variable.
     /// let idx = StateIndex::Scalar();
@@ -170,7 +170,7 @@ impl<T: OdeState> Solution<T> {
     pub fn get_state_variable<V: Vector<f64>>(&self, index: &StateIndex) -> V {
         let mut x = V::new_with_length(self.len());
         for (i, y) in self.y.iter().enumerate() {
-            x[i] = y.get_state_variable(*index);
+            x.vset(i, y.get_state_variable(*index));
         }
         x
     }
@@ -180,12 +180,13 @@ impl<T: OdeState> Solution<T> {
 mod tests {
     use super::*;
     use linalg_traits::{Mat, Matrix};
+    use numtest::*;
 
     #[cfg(feature = "nalgebra")]
-    use nalgebra::{dvector, DMatrix, DVector, SMatrix, SVector};
+    use nalgebra::{DMatrix, DVector, SMatrix, SVector, dvector};
 
     #[cfg(feature = "ndarray")]
-    use ndarray::{array, Array1, Array2};
+    use ndarray::{Array1, Array2, array};
 
     #[test]
     fn test_with_capacity() {
@@ -297,9 +298,9 @@ mod tests {
         // Verify that the initial time and initial condition were stored.
         assert_eq!(sol.t[0], 1.0);
         if M::is_row_major() {
-            assert_eq!(sol.y[0].as_slice(), &[1.0, 2.0, 3.0, 4.0]);
+            assert_arrays_equal!(sol.y[0].as_slice(), &[1.0, 2.0, 3.0, 4.0]);
         } else {
-            assert_eq!(sol.y[0].as_slice(), &[1.0, 3.0, 2.0, 4.0]);
+            assert_arrays_equal!(sol.y[0].as_slice(), &[1.0, 3.0, 2.0, 4.0]);
         }
 
         // Verify that nothing has been stored besides the initial time and initial condition.

@@ -16,7 +16,7 @@ use ndarray::Array1;
 /// # Arguments
 ///
 /// * `$type:ident` - Type to implement the [`OdeState`] trait for. Do not include any type
-///                   parameters (e.g. use `Vec` instead of `Vec<f64>`).
+///   parameters (e.g. use `Vec` instead of `Vec<f64>`).
 ///
 /// # Example
 ///
@@ -120,7 +120,7 @@ mod tests {
 
         // Check indexing.
         for i in 0..2 {
-            assert_eq!(a.get_state_variable(StateIndex::Vector(i)), a[i]);
+            assert_eq!(a.get_state_variable(StateIndex::Vector(i)), a.vget(i));
         }
     }
 

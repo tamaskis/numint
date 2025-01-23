@@ -19,7 +19,7 @@ use num_traits::ToPrimitive;
 /// # Arguments
 ///
 /// * `$($type:ty),*` - A comma-separated list of scalar types for which the [`OdeState`] trait
-///                     implementation will be generated.
+///   implementation will be generated.
 ///
 /// # Example
 ///
