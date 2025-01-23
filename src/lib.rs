@@ -69,12 +69,15 @@
 #![warn(missing_docs)]
 
 // Module declarations.
+pub(crate) mod events;
 pub(crate) mod integration_methods;
 pub(crate) mod ode_state;
 pub(crate) mod solution;
 pub(crate) mod solve_ivp;
 
 // Re-exports.
+pub use crate::events::event::{ConditionFunction, Event, EventFunction, StateResetFunction};
+pub use crate::events::methods::EventDetectionMethod;
 pub use crate::integration_methods::integration_method_trait::IntegrationMethod;
 pub use crate::integration_methods::runge_kutta::{
     Euler, RK2Heun, RK2Ralston, RK3Heun, RK3Ralston, RK4Ralston, RK2, RK3, RK4, RK438, SSPRK3,
