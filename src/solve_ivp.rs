@@ -1,3 +1,4 @@
+use crate::event::{detect_events, Event};
 use crate::integration_methods::integration_method_trait::IntegrationMethod;
 use crate::ode_state::ode_state_trait::OdeState;
 use crate::solution::Solution;
@@ -85,7 +86,7 @@ use crate::solution::Solution;
 /// let h = 1.0;
 ///
 /// // Solve the initial value problem.
-/// let sol = solve_ivp::<f64, Euler>(&f, t0, &y0, tf, h);
+/// let sol = solve_ivp::<f64, Euler>(&f, t0, &y0, tf, h, None);
 ///
 /// // Check the results.
 /// assert_eq!(sol.t, [0.0, 1.0, 2.0, 3.0]);
@@ -97,19 +98,24 @@ pub fn solve_ivp<T: OdeState, M: IntegrationMethod<T>>(
     y0: &T,
     tf: f64,
     mut h: f64,
+    events: Option<&Vec<Event<T>>>,
 ) -> Solution<T> {
     // Initialize the struct to store the solution. This:
     //  --> Preallocates memory for the time and solution vectors.
     //  --> Stores the initial conditions in the solution.
     let mut sol = Solution::new_for_ivp(y0, t0, tf, h);
 
+    // Current sample time.
+    let mut t;
+
     // Solution at the current sample time.
     let mut y = y0.clone();
 
     // Solve the initial value problem.
     for i in 1..sol.t.capacity() {
-        // Update the current sample time.
-        sol.t.push(t0 + (i as f64) * h);
+        // Update and store the current sample time.
+        t = t0 + (i as f64) * h;
+        sol.t.push(t);
 
         // Adjust the time step for the last step.
         if i == sol.t.capacity() - 1 {
@@ -122,6 +128,26 @@ pub fn solve_ivp<T: OdeState, M: IntegrationMethod<T>>(
 
         // Store the solution at the current sample time.
         sol.y.push(y.clone());
+
+        // Perform event detection. TODO.
+        if let Some(events) = events {
+            let (idx_event, h_event) =
+                detect_events::<T, M>(f, events, sol.t[i - 1], &sol.y[i - 1], &y, h);
+
+            // TODO.
+            //  --> TODO: still need to indicate which event was detected
+            //  --> TODO: still need to perform a break if the event should terminate integration
+            //  --> TODO: probably best to break some of this stuff out into helper functions to
+            //            make unit testing way easier
+            if let (Some(idx_event), Some(h_event)) = (idx_event, h_event) {
+                // Propagate the state to the event.
+                M::propagate(f, sol.t[i], h_event, &mut y);
+
+                // Store the solution at the event.
+                sol.t.push(sol.t[i] + h_event);
+                sol.y.push(y.clone());
+            }
+        }
     }
 
     // Free up any unused memory.
@@ -157,7 +183,7 @@ mod tests {
         let h = 1.0;
 
         // Solve the initial value problem.
-        let sol = solve_ivp::<f64, Euler>(&f, t0, &y0, tf, h);
+        let sol = solve_ivp::<f64, Euler>(&f, t0, &y0, tf, h, None);
 
         // Check the results.
         assert_eq!(sol.t, [0.0, 1.0, 2.0, 3.0]);
@@ -195,7 +221,7 @@ mod tests {
         let h = 0.1;
 
         // Solve the initial value problem.
-        let sol = solve_ivp::<DVector<f64>, Euler>(&f, t0, &y0, tf, h);
+        let sol = solve_ivp::<DVector<f64>, Euler>(&f, t0, &y0, tf, h, None);
 
         // Check the results.
         assert_arrays_equal_to_decimal!(
@@ -260,7 +286,7 @@ mod tests {
         let h = 0.1;
 
         // Solve the initial value problem.
-        let sol = solve_ivp::<SMatrix<f64, 2, 2>, Euler>(&f, t0, &y0, tf, h);
+        let sol = solve_ivp::<SMatrix<f64, 2, 2>, Euler>(&f, t0, &y0, tf, h, None);
 
         // Check the results.
         assert_arrays_equal_to_decimal!(
@@ -350,7 +376,7 @@ mod tests {
         let tf = 4.5;
 
         // Solve the initial value problem.
-        let sol = solve_ivp::<f64, Euler>(&f, t0, &y0, tf, h);
+        let sol = solve_ivp::<f64, Euler>(&f, t0, &y0, tf, h, None);
 
         // Check the results.
         assert_eq!(sol.t, [0.0, 1.0, 2.0, 3.0, 4.0, 4.5]);

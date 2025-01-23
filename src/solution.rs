@@ -114,7 +114,7 @@ impl<T: OdeState> Solution<T> {
     /// let t0 = 0.0;
     /// let tf = 1.0;
     /// let h = 0.1;
-    /// let sol = solve_ivp::<Vec<f64>, Euler>(&f, t0, &y0, tf, h);
+    /// let sol = solve_ivp::<Vec<f64>, Euler>(&f, t0, &y0, tf, h, None);
     ///
     /// // Get the time history of the y₁, where y = (y₀,y₁)ᵀ.
     /// let idx = StateIndex::Vector(1);
@@ -142,7 +142,7 @@ impl<T: OdeState> Solution<T> {
     /// let t0 = 0.0;
     /// let tf = 1.0;
     /// let h = 0.1;
-    /// let sol = solve_ivp::<SMatrix<f64, 2, 2>, Euler>(&f, t0, &y0, tf, h);
+    /// let sol = solve_ivp::<SMatrix<f64, 2, 2>, Euler>(&f, t0, &y0, tf, h, None);
     ///
     /// // Get the time history of y₁₀, where y = ((y₀₀,y₀₁), (y₁₀,y₁₁)).
     /// let idx = StateIndex::Matrix(1, 0);
@@ -161,7 +161,7 @@ impl<T: OdeState> Solution<T> {
     /// let t0 = 0.0;
     /// let tf = 3.0;
     /// let h = 1.0;
-    /// let sol = solve_ivp::<f64, Euler>(&f, t0, &y0, tf, h);
+    /// let sol = solve_ivp::<f64, Euler>(&f, t0, &y0, tf, h, None);
     ///
     /// // Get the time history of the only state variable.
     /// let idx = StateIndex::Scalar();
