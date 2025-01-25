@@ -148,6 +148,10 @@ pub fn solve_ivp<T: OdeState, M: IntegrationMethod<T>>(
                 sol.y.push(y.clone());
 
                 // Terminate the integration loop.
+                let event = &events[idx_event];
+                if event.num_detections == event.terminal {
+                    break;
+                }
             }
         }
     }
