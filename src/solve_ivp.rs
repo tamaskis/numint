@@ -163,6 +163,11 @@ pub fn solve_ivp<T: OdeState, M: IntegrationMethod<T>>(
                 if event.num_detections == event.terminal {
                     break;
                 }
+
+                // Reset the state TODO terminal must be 0 for this to happen
+                if let Some(r) = &event.r {
+                    sol.y[i + 1] = r(t_event, &y);
+                }
             }
         }
     }
