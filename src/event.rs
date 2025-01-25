@@ -106,13 +106,13 @@ pub type StateResetFunction<T> = Box<dyn Fn(f64, &T) -> T>;
 /// solvers), the `Event` struct also supports two additional types of functions that aim to improve
 /// efficiency and also make it easier to express more nuanced initial value problems.
 pub struct Event<T: OdeState> {
-    /// Event function, `g(t,y)`. TODO.
+    /// Event function, `g(t,y)`. See [`EventFunction`] for more details.
     pub(crate) g: EventFunction<T>,
 
-    /// Condition function `c(t,y)`. TODO.
+    /// Condition function, `c(t,y)`. See [`ConditionFunction`] for more details.
     pub(crate) c: ConditionFunction<T>,
 
-    /// State reset function, `r(t,y)`. TODO.
+    /// State reset function, `r(t,y)`. See [`StateResetFunction`] for more details.
     pub(crate) r: Option<StateResetFunction<T>>,
 
     /// Direction of a zero crossing to trigger the event. See [`Direction`] for more information.
