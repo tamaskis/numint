@@ -112,8 +112,8 @@ pub struct Event<T: OdeState> {
     /// Condition function, `c(t,y)`. See [`ConditionFunction`] for more details.
     pub(crate) c: ConditionFunction<T>,
 
-    /// State reset function, `r(t,y)`. See [`StateResetFunction`] for more details.
-    pub(crate) r: Option<StateResetFunction<T>>,
+    /// State reset function, `s(t,y)`. See [`StateResetFunction`] for more details.
+    pub(crate) s: Option<StateResetFunction<T>>,
 
     /// Direction of a zero crossing to trigger the event. See [`Direction`] for more information.
     pub(crate) direction: Direction,
@@ -169,7 +169,7 @@ impl<T: OdeState + 'static> Event<T> {
         Event {
             g: Box::new(g),
             c: Box::new(default_condition_function),
-            r: None,
+            s: None,
             direction: Direction::Either,
             terminal: 1,
             method: EventDetectionMethod::Exact,
@@ -185,8 +185,8 @@ impl<T: OdeState + 'static> Event<T> {
         self.c = Box::new(c);
     }
 
-    pub fn r(&mut self, r: impl Fn(f64, &T) -> T + 'static) {
-        self.r = Some(Box::new(r));
+    pub fn s(&mut self, r: impl Fn(f64, &T) -> T + 'static) {
+        self.s = Some(Box::new(r));
     }
 
     pub fn direction(mut self, direction: Direction) -> Self {

@@ -169,8 +169,8 @@ pub fn solve_ivp<T: OdeState, M: IntegrationMethod<T>>(
                 }
 
                 // Reset the state.
-                if let Some(r) = &event.r {
-                    sol.y[i + 1] = r(t_event, &y);
+                if let Some(s) = &event.s {
+                    sol.y[i + 1] = s(t_event, &y);
                 }
             }
         }
