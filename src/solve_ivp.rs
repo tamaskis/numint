@@ -131,24 +131,35 @@ pub fn solve_ivp<T: OdeState, M: IntegrationMethod<T>>(
 
         // Perform event detection. TODO.
         if let Some(events) = events.as_deref_mut() {
+            // Get the index of and the step size to reach the first detected event (if one was
+            // detected).
             let (idx_event, h_event) =
                 detect_events::<T, M>(f, events, sol.t[i - 1], &sol.y[i - 1], &y, h);
 
-            // TODO.
-            //  --> TODO: still need to indicate which event was detected
-            //  --> TODO: still need to perform a break if the event should terminate integration
+            // If an event was detected, propagate to the event, store the event information, and
+            // terminate integration if necessary.
             //  --> TODO: probably best to break some of this stuff out into helper functions to
             //            make unit testing way easier
             if let (Some(idx_event), Some(h_event)) = (idx_event, h_event) {
+                // Event time.
+                let t_event = sol.t[i] + h_event;
+
                 // Propagate the state to the event.
                 M::propagate(f, sol.t[i], h_event, &mut y);
 
                 // Store the solution at the event.
-                sol.t.push(sol.t[i] + h_event);
+                sol.t.push(t_event);
                 sol.y.push(y.clone());
 
-                // Terminate the integration loop.
-                let event = &events[idx_event];
+                // Extract the event that was detected.
+                let event = &mut events[idx_event];
+
+                // Store the time and the value of the state when the event was detected.
+                event.t_located.push(t_event);
+                event.y_located.push(y.clone());
+
+                // Break the integration loop if the number of detections has reached the number of
+                // detections requiring termination.
                 if event.num_detections == event.terminal {
                     break;
                 }
