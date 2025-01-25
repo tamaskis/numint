@@ -181,6 +181,23 @@ impl<T: OdeState + 'static> Event<T> {
         }
     }
 
+    /// Set the condition function for this event.
+    ///
+    /// # Arguments
+    ///
+    /// * `c` - Condition function. See [`ConditionFunction`] for more information.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use numint::Event;
+    ///
+    /// // Define an event.
+    /// let mut  event = Event::new(|t: f64, y: &f64| *y * t);
+    ///
+    /// // Set the condition function.
+    /// let event = event.c(|t: f64, _y: &f64| t > 20.0);
+    /// ```
     pub fn c(&mut self, c: impl Fn(f64, &T) -> bool + 'static) {
         self.c = Box::new(c);
     }
