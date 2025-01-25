@@ -98,7 +98,7 @@ pub fn solve_ivp<T: OdeState, M: IntegrationMethod<T>>(
     y0: &T,
     tf: f64,
     mut h: f64,
-    events: Option<&Vec<Event<T>>>,
+    mut events: Option<&mut Vec<Event<T>>>,
 ) -> Solution<T> {
     // Initialize the struct to store the solution. This:
     //  --> Preallocates memory for the time and solution vectors.
@@ -130,7 +130,7 @@ pub fn solve_ivp<T: OdeState, M: IntegrationMethod<T>>(
         sol.y.push(y.clone());
 
         // Perform event detection. TODO.
-        if let Some(events) = events {
+        if let Some(events) = events.as_deref_mut() {
             let (idx_event, h_event) =
                 detect_events::<T, M>(f, events, sol.t[i - 1], &sol.y[i - 1], &y, h);
 
@@ -146,6 +146,8 @@ pub fn solve_ivp<T: OdeState, M: IntegrationMethod<T>>(
                 // Store the solution at the event.
                 sol.t.push(sol.t[i] + h_event);
                 sol.y.push(y.clone());
+
+                // Terminate the integration loop.
             }
         }
     }

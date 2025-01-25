@@ -184,6 +184,10 @@ fn detect_event<T: OdeState, M: IntegrationMethod<T>>(
 
 /// Detect the first occurence of an event within a time step.
 ///
+/// # Type Parameters
+///
+/// TODO
+///
 /// # Arguments
 ///
 /// * `f` - Function defining the ordinary differential equation, `dy/dt = f(t,y)`. See the
@@ -208,7 +212,7 @@ fn detect_event<T: OdeState, M: IntegrationMethod<T>>(
 ///     * `None` - Indicates that no events were detected.
 pub(crate) fn detect_events<T: OdeState, M: IntegrationMethod<T>>(
     f: &impl Fn(f64, &T) -> T,
-    events: &Vec<Event<T>>,
+    events: &mut Vec<Event<T>>,
     t_prev: f64,
     y_prev: &T,
     y_curr: &T,
@@ -219,12 +223,21 @@ pub(crate) fn detect_events<T: OdeState, M: IntegrationMethod<T>>(
     let mut h_events: Vec<Option<f64>> = vec![];
 
     // Try detecting each event.
-    for event in events {
-        h_events.push(detect_event::<T, M>(f, event, t_prev, y_prev, y_curr, h));
+    for i in 0..events.len() {
+        h_events.push(detect_event::<T, M>(
+            f, &events[i], t_prev, y_prev, y_curr, h,
+        ));
     }
 
     // Identify the first event that was detected.
-    identify_first_event(&h_events)
+    let (idx_event, h_event) = identify_first_event(&h_events);
+
+    // Update the number of detections.
+    if let Some(idx_event) = idx_event {
+        events[idx_event].num_detections += 1;
+    }
+
+    (idx_event, h_event)
 }
 
 /// TODO.
