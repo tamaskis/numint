@@ -165,6 +165,10 @@ impl<T: OdeState + 'static> Event<T> {
     /// * `direction` to [`Direction::Either`]
     /// * `terminal` to `1`
     /// * `method` to [`EventDetectionMethod::Exact`]
+    ///
+    /// # Example
+    ///
+    /// TODO
     pub fn new(g: impl Fn(f64, &T) -> f64 + 'static) -> Event<T> {
         Event {
             g: Box::new(g),
