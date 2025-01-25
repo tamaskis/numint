@@ -17,6 +17,7 @@ use crate::solution::Solution;
 /// * `y0` - Initial condition.
 /// * `tf` - Final time.
 /// * `h` - Time step.
+/// * `events` - Events.
 ///
 /// # Returns
 ///
@@ -155,16 +156,19 @@ pub fn solve_ivp<T: OdeState, M: IntegrationMethod<T>>(
                 let event = &mut events[idx_event];
 
                 // Store the time and the value of the state when the event was detected.
+                //  --> Note that if a state reset is done, this still stores the value at the event
+                //      before the state reset.
                 event.t_located.push(t_event);
                 event.y_located.push(y.clone());
 
                 // Break the integration loop if the number of detections has reached the number of
                 // detections requiring termination.
+                //  --> Note that no state reset is done in this case.
                 if event.num_detections == event.terminal {
                     break;
                 }
 
-                // Reset the state TODO terminal must be 0 for this to happen
+                // Reset the state.
                 if let Some(r) = &event.r {
                     sol.y[i + 1] = r(t_event, &y);
                 }

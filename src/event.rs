@@ -32,18 +32,61 @@ pub enum EventDetectionMethod {
     // RightInterpolation,
 }
 
+/// Event function, `g(t,y)`.
+///
+/// The type of `y` must match the type of the ODE state ([`OdeState`]).
+///
+/// TODO description of what this function does
+///
+/// | State Type | Event Function Signature |
+/// | ---------- | ------------------------ |
+/// | Scalar ($y\in\mathbb{R}$) | $g:\mathbb{R}\times\mathbb{R}\to\mathbb{R}$ |
+/// | Vector ($\mathbf{y}\in\mathbb{R}^{p}$) | $g:\mathbb{R}\times\mathbb{R}^{p}\to\mathbb{R}$ |
+/// | Matrix ($\mathbf{Y}\in\mathbb{R}^{p\times r}$) | $g:\mathbb{R}\times\mathbb{R}^{p\times r}\to\mathbb{R}$ |
+pub type EventFunction<T> = Box<dyn Fn(f64, &T) -> f64>;
+
+/// Condition function, `c(t,y)`.
+///
+/// The type of `y` must match the type of the ODE state ([`OdeState`]).
+///
+/// TODO description of what this function does
+///
+/// | State Type | Event Function Signature |
+/// | ---------- | ------------------------ |
+/// | Scalar ($y\in\mathbb{R}$) | $c:\mathbb{R}\times\mathbb{R}\to\mathbb{B}$ |
+/// | Vector ($\mathbf{y}\in\mathbb{R}^{p}$) | $c:\mathbb{R}\times\mathbb{R}^{p}\to\mathbb{B}$ |
+/// | Matrix ($\mathbf{Y}\in\mathbb{R}^{p\times r}$) | $c:\mathbb{R}\times\mathbb{R}^{p\times r}\to\mathbb{B}$ |
+pub type ConditionFunction<T> = Box<dyn Fn(f64, &T) -> bool>;
+
+/// State reset function, `s(t,y)`.
+///
+/// The type of `y` must match the type of the ODE state ([`OdeState`]).
+///
+/// TODO description of what this function does
+///
+/// | State Type | Event Function Signature |
+/// | ---------- | ------------------------ |
+/// | Scalar ($y\in\mathbb{R}$) | $s:\mathbb{R}\times\mathbb{R}\to\mathbb{R}$ |
+/// | Vector ($\mathbf{y}\in\mathbb{R}^{p}$) | $s:\mathbb{R}\times\mathbb{R}^{p}\to\mathbb{R}^{p}$ |
+/// | Matrix ($\mathbf{Y}\in\mathbb{R}^{p\times r}$) | $s:\mathbb{R}\times\mathbb{R}^{p\times r}\to\mathbb{R}^{p\times r}$ |
+pub type StateResetFunction<T> = Box<dyn Fn(f64, &T) -> T>;
+
 /// Event.
 ///
 /// TODO detailed description
+///
+/// In addition to storing an event function $g(t,\mathbf{y})$ (something common to most ODE
+/// solvers), the `Event` struct also supports two additional types of functions that aim to improve
+/// efficiency and also make it easier to express more nuanced initial value problems.
 pub struct Event<T: OdeState> {
     /// Event function, `g(t,y)`. TODO.
-    pub(crate) g: Box<dyn Fn(f64, &T) -> f64>,
+    pub(crate) g: EventFunction<T>,
 
     /// Condition function `c(t,y)`. TODO.
-    pub(crate) c: Box<dyn Fn(f64, &T) -> bool>,
+    pub(crate) c: ConditionFunction<T>,
 
     /// State reset function, `r(t,y)`. TODO.
-    pub(crate) r: Option<Box<dyn Fn(f64, &T) -> T>>,
+    pub(crate) r: Option<StateResetFunction<T>>,
 
     /// Direction of a zero crossing to trigger the event. See [`Direction`] for more information.
     pub(crate) direction: Direction,
