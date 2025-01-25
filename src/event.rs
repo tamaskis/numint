@@ -212,7 +212,7 @@ fn detect_event<T: OdeState, M: IntegrationMethod<T>>(
 ///     * `None` - Indicates that no events were detected.
 pub(crate) fn detect_events<T: OdeState, M: IntegrationMethod<T>>(
     f: &impl Fn(f64, &T) -> T,
-    events: &mut Vec<Event<T>>,
+    events: &mut [Event<T>],
     t_prev: f64,
     y_prev: &T,
     y_curr: &T,
@@ -222,11 +222,13 @@ pub(crate) fn detect_events<T: OdeState, M: IntegrationMethod<T>>(
     // for events that aren't detected.
     let mut h_events: Vec<Option<f64>> = vec![];
 
+    // Get a fresh reborrow of "events" (into_iter will perform a move since Event does not
+    // implement copy, and we will need to modify an event in a subsequent step).
+    let events_fresh = &mut *events;
+
     // Try detecting each event.
-    for i in 0..events.len() {
-        h_events.push(detect_event::<T, M>(
-            f, &events[i], t_prev, y_prev, y_curr, h,
-        ));
+    for event in events_fresh {
+        h_events.push(detect_event::<T, M>(f, event, t_prev, y_prev, y_curr, h));
     }
 
     // Identify the first event that was detected.
