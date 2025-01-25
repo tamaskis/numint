@@ -34,9 +34,15 @@ pub enum EventDetectionMethod {
 
 /// Event function, `g(t,y)`.
 ///
-/// The type of `y` must match the type of the ODE state ([`OdeState`]).
+/// The event function is used to mathematically define some event that is a function of either the
+/// current time ($t$), the current state ($y\in\mathbb{R}$, $\mathbf{y}\in\mathbb{R}^{p}$, or
+/// $\mathbf{Y}\in\mathbb{R}^{p\times r}$), or both. An event occurs when the value of the event
+/// function becomes 0.
 ///
-/// TODO description of what this function does
+/// # ODE State Type
+///
+/// The ODE state, `y`, can be either a scalar, vector, or matrix, as outlined in the table below.
+/// See [`OdeState`] for more details.
 ///
 /// | State Type | Event Function Signature |
 /// | ---------- | ------------------------ |
@@ -47,9 +53,27 @@ pub type EventFunction<T> = Box<dyn Fn(f64, &T) -> f64>;
 
 /// Condition function, `c(t,y)`.
 ///
-/// The type of `y` must match the type of the ODE state ([`OdeState`]).
+/// The condition function is used to define when the ODE solver should be trying to detect an
+/// event. Given the current time (`t`) and the current state (`y`), the condition function should
+/// return `true` if we should try to detect this [`Event`], or `false` if we should _not_ try to
+/// detect this [`Event`].
 ///
-/// TODO description of what this function does
+/// The most precise way to perform ODE event detection is to use a root solver to find where the
+/// event function (see [`EventFunction`]) crosses 0. Since this requires updating the value of the
+/// ODE state, `y`, this requires a large amount of intermediate propagations (using some
+/// [`IntegrationMethod`]), which in turn results in many additional evaluations of the ODE
+/// `dy/dt = f(t,y)`. In large-scale practical applications (i.e. not toy problems), the evaluation
+/// of `f(t,y)` is typically the most costly operation.
+///
+/// The purpose of the condition function is to only try to detect an event when the current time
+/// and/or state satisfies some condition. For example, if we know some event will only feasibly
+/// occur after time `t = 20`, it makes no sense to try to perform a costly event detection at times
+/// before `t = 20`.
+///
+/// # ODE State Type
+///
+/// The ODE state, `y`, can be either a scalar, vector, or matrix, as outlined in the table below.
+/// See [`OdeState`] for more details.
 ///
 /// | State Type | Event Function Signature |
 /// | ---------- | ------------------------ |
@@ -60,9 +84,12 @@ pub type ConditionFunction<T> = Box<dyn Fn(f64, &T) -> bool>;
 
 /// State reset function, `s(t,y)`.
 ///
-/// The type of `y` must match the type of the ODE state ([`OdeState`]).
-///
 /// TODO description of what this function does
+///
+/// # ODE State Type
+///
+/// The ODE state, `y`, can be either a scalar, vector, or matrix, as outlined in the table below.
+/// See [`OdeState`] for more details.
 ///
 /// | State Type | Event Function Signature |
 /// | ---------- | ------------------------ |
