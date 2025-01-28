@@ -143,14 +143,15 @@ pub fn solve_ivp<T: OdeState, M: IntegrationMethod<T>>(
             //            make unit testing way easier
             if let (Some(idx_event), Some(h_event)) = (idx_event, h_event) {
                 // Event time.
-                let t_event = sol.t[i] + h_event;
+                let t_event = sol.t[i - 1] + h_event;
+                println!("{}", h_event);
 
                 // Propagate the state to the event.
-                M::propagate(f, sol.t[i], h_event, &mut y);
+                M::propagate(f, sol.t[i - 1], h_event, &mut y);
 
                 // Store the solution at the event.
-                sol.t.push(t_event);
-                sol.y.push(y.clone());
+                sol.t[i] = t_event;
+                sol.y[i] = y.clone();
 
                 // Extract the event that was detected.
                 let event = &mut events[idx_event];
@@ -170,7 +171,7 @@ pub fn solve_ivp<T: OdeState, M: IntegrationMethod<T>>(
 
                 // Reset the state.
                 if let Some(s) = &event.s {
-                    sol.y[i + 1] = s(t_event, &y);
+                    sol.y[i] = s(t_event, &y);
                 }
             }
         }
@@ -213,6 +214,32 @@ mod tests {
 
         // Check the results.
         assert_eq!(sol.t, [0.0, 1.0, 2.0, 3.0]);
+        assert_eq!(sol.y, [1.0, 2.0, 4.0, 8.0]);
+    }
+
+    #[test]
+    fn test_solve_ivp_event_detection_on_state() {
+        // Function defining the ODE.
+        let f = |_t: f64, y: &f64| *y;
+
+        // Initial condition.
+        let y0 = 1.0;
+
+        // Initial and final time.
+        let t0 = 0.0;
+        let tf = 3.0;
+
+        // Time step.
+        let h = 1.0;
+
+        // Event.
+        let event = Event::new(|_t: f64, y: &f64| y - 2.5);
+
+        // Solve the initial value problem. // TODO: don't modify event stuff, rather store in the solution struct
+        let sol = solve_ivp::<f64, Euler>(&f, t0, &y0, tf, h, Some(&mut vec![event]));
+
+        // Check the results.
+        // assert_eq!(sol.t, [0.0, 1.0, 2.0, 3.0]);
         assert_eq!(sol.y, [1.0, 2.0, 4.0, 8.0]);
     }
 
