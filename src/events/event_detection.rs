@@ -8,6 +8,11 @@ use crate::ode_state::ode_state_trait::OdeState;
 
 /// Detect an event within a time step.
 ///
+/// # Type Parameters
+///
+/// * `T` - TODO.
+/// * `M` - TODO.
+///
 /// # Arguments
 ///
 /// * `f` - Function defining the ordinary differential equation, `dy/dt = f(t,y)`. See the
@@ -60,7 +65,8 @@ fn detect_event<T: OdeState, M: IntegrationMethod<T>>(
 ///
 /// # Type Parameters
 ///
-/// TODO
+/// * `T` - TODO.
+/// * `M` - TODO.
 ///
 /// # Arguments
 ///
