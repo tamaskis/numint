@@ -13,7 +13,7 @@ use nalgebra::SMatrix;
 /// # Arguments
 ///
 /// * `$type:ident` - Type to implement the [`OdeState`] trait for. Do not include any type
-///                   parameters (e.g. use `SMatrix` instead of `SMatrix<f64, R, C>`).
+///   parameters (e.g. use `SMatrix` instead of `SMatrix<f64, R, C>`).
 ///
 /// # Warning
 ///

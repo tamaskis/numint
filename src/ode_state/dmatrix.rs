@@ -7,6 +7,9 @@ use nalgebra::DMatrix;
 #[cfg(feature = "ndarray")]
 use ndarray::Array2;
 
+#[cfg(feature = "faer")]
+use faer::Mat as FMat;
+
 /// Macro to implement the [`OdeState`] trait for dynamically-sized matrix types.
 ///
 /// A type must implement the
@@ -16,7 +19,7 @@ use ndarray::Array2;
 /// # Arguments
 ///
 /// * `$type:ident` - Type to implement the [`OdeState`] trait for. Do not include any type
-///                   parameters (e.g. use `Mat` instead of `Mat<f64>`).
+///   parameters (e.g. use `Mat` instead of `Mat<f64>`).
 ///
 /// # Example
 ///
@@ -75,6 +78,10 @@ impl_ode_state_for_dmatrix!(DMatrix);
 // Implementation of OdeState for ndarray::Array2<f64>.
 #[cfg(feature = "ndarray")]
 impl_ode_state_for_dmatrix!(Array2);
+
+// Implementation of OdeState for faer::Mat<f64>.
+#[cfg(feature = "faer")]
+impl_ode_state_for_dmatrix!(FMat);
 
 #[cfg(test)]
 mod tests {
@@ -141,5 +148,11 @@ mod tests {
     #[cfg(feature = "ndarray")]
     fn test_ode_state_ndarray_array2() {
         ode_state_matrix_test_helper::<Array2<f64>>();
+    }
+
+    #[test]
+    #[cfg(feature = "faer")]
+    fn test_ode_state_faer_mat() {
+        ode_state_matrix_test_helper::<Mat<f64>>();
     }
 }

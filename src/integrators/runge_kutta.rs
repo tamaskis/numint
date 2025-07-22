@@ -1,10 +1,10 @@
-pub use crate::integration_methods::integration_method_trait::IntegrationMethod;
+pub use crate::integrators::integrator_trait::Integrator;
 pub use crate::ode_state::ode_state_trait::OdeState;
 
 /// Euler (first-order) method.
 pub struct Euler;
 
-impl<T: OdeState> IntegrationMethod<T> for Euler {
+impl<T: OdeState> Integrator<T> for Euler {
     fn propagate(f: &impl Fn(f64, &T) -> T, t: f64, h: f64, y: &mut T) {
         // yₙ₊₁ = yₙ + hf(tₙ, yₙ)
         y.add_assign(&f(t, y).mul(h));
@@ -14,7 +14,7 @@ impl<T: OdeState> IntegrationMethod<T> for Euler {
 /// Midpoint (second-order) method.
 pub struct RK2;
 
-impl<T: OdeState> IntegrationMethod<T> for RK2 {
+impl<T: OdeState> Integrator<T> for RK2 {
     fn propagate(f: &impl Fn(f64, &T) -> T, t: f64, h: f64, y: &mut T) {
         // k₁ = f(tₙ, yₙ)
         let k1 = f(t, y);
@@ -30,7 +30,7 @@ impl<T: OdeState> IntegrationMethod<T> for RK2 {
 /// Heun's second-order method.
 pub struct RK2Heun;
 
-impl<T: OdeState> IntegrationMethod<T> for RK2Heun {
+impl<T: OdeState> Integrator<T> for RK2Heun {
     fn propagate(f: &impl Fn(f64, &T) -> T, t: f64, h: f64, y: &mut T) {
         // k₁ = f(tₙ, yₙ)
         let k1 = f(t, y);
@@ -46,7 +46,7 @@ impl<T: OdeState> IntegrationMethod<T> for RK2Heun {
 /// Ralston's second-order method.
 pub struct RK2Ralston;
 
-impl<T: OdeState> IntegrationMethod<T> for RK2Ralston {
+impl<T: OdeState> Integrator<T> for RK2Ralston {
     fn propagate(f: &impl Fn(f64, &T) -> T, t: f64, h: f64, y: &mut T) {
         // k₁ = f(tₙ, yₙ)
         let k1 = f(t, y);
@@ -62,7 +62,7 @@ impl<T: OdeState> IntegrationMethod<T> for RK2Ralston {
 /// Classic (Kutta's) third-order method.
 pub struct RK3;
 
-impl<T: OdeState> IntegrationMethod<T> for RK3 {
+impl<T: OdeState> Integrator<T> for RK3 {
     fn propagate(f: &impl Fn(f64, &T) -> T, t: f64, h: f64, y: &mut T) {
         // k₁ = f(tₙ, yₙ)
         let k1 = f(t, y);
@@ -81,7 +81,7 @@ impl<T: OdeState> IntegrationMethod<T> for RK3 {
 /// Heun's third-order method.
 pub struct RK3Heun;
 
-impl<T: OdeState> IntegrationMethod<T> for RK3Heun {
+impl<T: OdeState> Integrator<T> for RK3Heun {
     fn propagate(f: &impl Fn(f64, &T) -> T, t: f64, h: f64, y: &mut T) {
         // k₁ = f(tₙ, yₙ)
         let k1 = f(t, y);
@@ -100,7 +100,7 @@ impl<T: OdeState> IntegrationMethod<T> for RK3Heun {
 /// Ralston's third-order method.
 pub struct RK3Ralston;
 
-impl<T: OdeState> IntegrationMethod<T> for RK3Ralston {
+impl<T: OdeState> Integrator<T> for RK3Ralston {
     fn propagate(f: &impl Fn(f64, &T) -> T, t: f64, h: f64, y: &mut T) {
         // k₁ = f(tₙ, yₙ)
         let k1 = f(t, y);
@@ -119,7 +119,7 @@ impl<T: OdeState> IntegrationMethod<T> for RK3Ralston {
 /// Strong stability preserving Runge-Kutta third-order method.
 pub struct SSPRK3;
 
-impl<T: OdeState> IntegrationMethod<T> for SSPRK3 {
+impl<T: OdeState> Integrator<T> for SSPRK3 {
     fn propagate(f: &impl Fn(f64, &T) -> T, t: f64, h: f64, y: &mut T) {
         // k₁ = f(tₙ, yₙ)
         let k1 = f(t, y);
@@ -141,7 +141,7 @@ impl<T: OdeState> IntegrationMethod<T> for SSPRK3 {
 /// Classic Runge-Kutta fourth-order method.
 pub struct RK4;
 
-impl<T: OdeState> IntegrationMethod<T> for RK4 {
+impl<T: OdeState> Integrator<T> for RK4 {
     fn propagate(f: &impl Fn(f64, &T) -> T, t: f64, h: f64, y: &mut T) {
         // k₁ = f(tₙ, yₙ)
         let k1 = f(t, y);
@@ -163,7 +163,7 @@ impl<T: OdeState> IntegrationMethod<T> for RK4 {
 /// Ralston's fourth-order method.
 pub struct RK4Ralston;
 
-impl<T: OdeState> IntegrationMethod<T> for RK4Ralston {
+impl<T: OdeState> Integrator<T> for RK4Ralston {
     fn propagate(f: &impl Fn(f64, &T) -> T, t: f64, h: f64, y: &mut T) {
         // k₁ = f(tₙ, yₙ)
         let k1 = f(t, y);
@@ -199,7 +199,7 @@ impl<T: OdeState> IntegrationMethod<T> for RK4Ralston {
 /// 3/8 rule fourth-order method.
 pub struct RK438;
 
-impl<T: OdeState> IntegrationMethod<T> for RK438 {
+impl<T: OdeState> Integrator<T> for RK438 {
     fn propagate(f: &impl Fn(f64, &T) -> T, t: f64, h: f64, y: &mut T) {
         // k₁ = f(tₙ, yₙ)
         let k1 = f(t, y);
@@ -229,7 +229,7 @@ mod tests {
     ///
     /// # Type Parameters
     ///
-    /// * `T` - Integration method type.
+    /// * `T` - Integrator type (any type implementing the [`Integrator`]) trait.
     ///
     /// # Arguments
     ///
@@ -238,7 +238,7 @@ mod tests {
     /// # Panics
     ///
     /// * If the ODE state after one propagation does not equal `y_exp`.
-    fn rkx_test_helper<T: IntegrationMethod<f64>>(y_exp: f64) {
+    fn rkx_test_helper<T: Integrator<f64>>(y_exp: f64) {
         // Function defining the ODE.
         let f = |t: f64, x: &f64| -2.0 * x + t.powi(2);
 

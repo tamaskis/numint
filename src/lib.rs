@@ -52,10 +52,10 @@
 //! type to define an ODE to be solved using this crate.
 //!
 //! This crate already defines the [`OdeState`] for a variety of different types from the standard
-//! library, `nalgebra`, and `ndarray`. For a full list, refer to the [`OdeState`] documentation.
-//! This crate also provides macros to automate the implementation of the [`OdeState`] trait for
-//! types that implement `linalg_traits::Scalar`, `linalg_traits::Vector`, or
-//!  `linalg_traits::Matrix` traits.
+//! library, `nalgebra`, `ndarray`, `faer`, and `linalg-traits`. For a full list, refer to the
+//! [`OdeState`] documentation. This crate also provides macros to automate the implementation of
+//! the [`OdeState`] trait for types that implement `linalg_traits::Scalar`,
+//! `linalg_traits::Vector`, or `linalg_traits::Matrix` traits.
 //!
 //! | Macro | Description |
 //! | ----- | ----------- |
@@ -64,19 +64,29 @@
 //! | [`impl_ode_state_for_svector!`] | Implement [`OdeState`] for a statically-sized vector type already implementing the [`linalg_traits::Vector`](https://docs.rs/linalg-traits/latest/linalg_traits/trait.Vector.html) trait. |
 //! | [`impl_ode_state_for_dmatrix!`] | Implement [`OdeState`] for a dynamically-sized matrix type already implementing the [`linalg_traits::Matrix`](https://docs.rs/linalg-traits/latest/linalg_traits/trait.Matrix.html) trait. |
 //! | [`impl_ode_state_for_smatrix!`] | Implement [`OdeState`] for a statically-sized matrix type already implementing the [`linalg_traits::Matrix`](https://docs.rs/linalg-traits/latest/linalg_traits/trait.Matrix.html) trait. |
+//!
+//! # Bouncing Ball Example
+//!
+//! TODO
 
 // Linter setup.
 #![warn(missing_docs)]
 
 // Module declarations.
-pub(crate) mod integration_methods;
+pub(crate) mod events;
+pub(crate) mod integrators;
 pub(crate) mod ode_state;
 pub(crate) mod solution;
 pub(crate) mod solve_ivp;
 
 // Re-exports.
-pub use crate::integration_methods::integration_method_trait::IntegrationMethod;
-pub use crate::integration_methods::runge_kutta::{
+pub use crate::events::event::{
+    ConditionFunction, Direction, Event, EventFunction, StateResetFunction, Termination,
+};
+pub use crate::events::event_manager::EventManager;
+pub use crate::events::methods::EventDetectionMethod;
+pub use crate::integrators::integrator_trait::Integrator;
+pub use crate::integrators::runge_kutta::{
     Euler, RK2Heun, RK2Ralston, RK3Heun, RK3Ralston, RK4Ralston, RK2, RK3, RK4, RK438, SSPRK3,
 };
 pub use crate::ode_state::ode_state_trait::{OdeState, StateIndex};
