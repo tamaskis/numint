@@ -406,22 +406,6 @@ impl<T: OdeState + 'static> Event<T> {
         self
     }
 
-    /// Update the name of the event.
-    ///
-    /// # Arguments
-    ///
-    /// * `name` - New name of the event.
-    ///
-    /// # Note
-    ///
-    /// This method is used to update the name of the event after it has been created in the case
-    /// that it was not set during construction. This is useful for renaming events after they have
-    /// been added to an event manager (we cannot just use [`Event::name`] because it consumes the
-    /// event, and we cannot implement [`Clone`] for `Event` because it contains a [`Box`]).
-    pub(crate) fn update_name(&mut self, name: &str) {
-        self.name = name.to_string();
-    }
-
     /// Get the name of the event.
     ///
     /// # Returns

@@ -170,11 +170,12 @@ pub fn solve_ivp<T: OdeState + 'static, I: Integrator<T>>(
                 // Store the time and the value of the state when the event was detected.
                 //  --> Note that if a state reset is done, this still stores the value at the event
                 //      before the state reset.
-                event.store(t_event, &y);
+                event.store(t_event, &y); // TODO this should be stored in the solution struct along with the index and name of the event
 
                 // Break the integration loop if the number of detections has reached the number of
                 // detections requiring termination.
                 //  --> Note that no state reset is done in this case.
+                // TODO: num_detections could be stored in EventManager
                 if event.num_detections == event.termination.num_detections {
                     break;
                 }
