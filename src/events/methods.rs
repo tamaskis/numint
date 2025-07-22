@@ -143,10 +143,6 @@ pub enum EventDetectionMethod {
     /// For this method, we simply assume that $t_{\mathrm{event}}=t_{\mathrm{prev}}$, such that
     ///
     /// $$h_{\mathrm{event}}=0$$
-    ///
-    /// # Warning
-    ///
-    /// If the event occurs exactly at a sample time, this method will identify the event as TODO
     LeftInterpolation,
 
     /// Approximate the time of an event as the last sample time before the event occurs (i.e.
@@ -157,16 +153,31 @@ pub enum EventDetectionMethod {
     /// $$h_{\mathrm{event}}=h$$
     ///
     /// where $h$ is the step size used by the integrator.
-    ///
-    /// # TODO
-    ///
-    /// see note above
     RightInterpolation,
 }
 
-/// TODO.
+/// Evaluate the event function at the previous and current times and states and determine if the
+/// event is triggered (i.e. if the event function changes sign).
 ///
-/// TODO: unit test
+/// # Arguments
+///
+/// * `event` - Event.
+/// * `t_prev` - Previous sample time.
+/// * `y_prev` - Previous state (i.e. solution at the previous sample time).
+/// * `y_curr` - Current state (i.e. solution at the current sample time).
+/// * `h` - Step size (to get from the previous time to the current time).
+///
+/// # Returns
+///
+/// An option where:
+///
+/// * `Some` contains a tuple with the values of the event function at the previous and current
+///   times and states.
+/// * `None` indicates that the event wasn't detected.
+///
+/// # TODO
+///
+/// Unit test
 fn event_detection_helper<T: OdeState>(
     event: &Event<T>,
     t_prev: f64,
@@ -321,32 +332,14 @@ pub(crate) fn left_event_detection<T: OdeState>(
     y_curr: &T,
     h: f64,
 ) -> Option<f64> {
-    // Evaluate the event function at the previous time and state.
-    let g_prev = (event.g)(t_prev, y_prev);
-
-    // Evaluate the event function at the current time and state.
-    let g_curr = (event.g)(t_prev + h, y_curr);
-
-    // Check the direction of g(t,y) if the event is only triggered in one direction.
-    if !matches!(event.direction, Direction::Either) {
-        // The event is not triggered if:
-        //  1) The event function does not change in value over the time step.
-        //  2) The event function increases over the time step, but the event is configured to only
-        //     trigger when the event function is decreasing.
-        //  3) The event function decreases over the time step, but the event is configured to only
-        //     trigger when the event function is increasing.
-        if (g_curr == g_prev)
-            || ((g_curr > g_prev) && matches!(event.direction, Direction::Decreasing))
-            || ((g_curr < g_prev) && matches!(event.direction, Direction::Increasing))
-        {
-            return None;
-        }
+    if let Some((_, g_curr)) = event_detection_helper(event, t_prev, y_prev, y_curr, h) {
+        // Check if the event is at the current time, and if so, return the step size to get from
+        // the previous time to the current time to identify it as the event. Otherwise, return 0 to
+        // identify the previous time as the event.
+        if g_curr == 0.0 { Some(h) } else { Some(0.0) }
+    } else {
+        None
     }
-
-    // Check if the event is at the current time, and if so, return the step size to get from the
-    // previous time to the current time to identify it as the event. Otherwise, return 0 to
-    // identify the previous time as the event.
-    if g_curr == 0.0 { Some(h) } else { Some(0.0) }
 }
 
 /// Perform right event detection.
@@ -382,9 +375,9 @@ pub(crate) fn right_event_detection<T: OdeState>(
     h: f64,
 ) -> Option<f64> {
     if let Some((g_prev, _)) = event_detection_helper(event, t_prev, y_prev, y_curr, h) {
-        // Check if the event is at the previous time, and if so, return 0 to identify it as the event.
-        // Otherwise, return the step size to get from the previous time to the current time to identify
-        // the current time as the event.
+        // Check if the event is at the previous time, and if so, return 0 to identify it as the
+        // event. Otherwise, return the step size to get from the previous time to the current time
+        // to identify the current time as the event.
         if g_prev == 0.0 { Some(0.0) } else { Some(h) }
     } else {
         None
