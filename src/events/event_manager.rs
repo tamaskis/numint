@@ -18,7 +18,7 @@ pub struct EventManager<'a, T: OdeState> {
     /// Number of times each event was detected. The `i`th element corresponds to the number of
     /// times the `i`th event was detected.
     #[allow(dead_code)] // TODO remove when used
-    num_detections: Vec<usize>,
+    pub(crate) num_detections: Vec<usize>,
 
     /// Times at which each event was located.
     ///
@@ -144,6 +144,23 @@ impl<T: OdeState + 'static> EventManager<'_, T> {
         }
 
         (idx_event, h_event)
+    }
+
+    /// Store the time and the value of the ODE state at an occurence of this event.
+    ///
+    /// # Arguments
+    ///
+    /// * `t` - Time at the occurence of this event.
+    /// * `y` - Value of the ODE state at the occurence of this event.
+    ///
+    /// # Note
+    ///
+    /// This method is only responsible for storing the time of an event and the corresponding value
+    /// of the ODE state. [`crate::events::event_detection::detect_events`] is responsible for
+    /// updating the number of time this event was detected.
+    pub(crate) fn store(&mut self, t: f64, y: &T, idx_event: usize) {
+        self.t_located[idx_event].push(t);
+        self.y_located[idx_event].push(y.clone());
     }
 }
 

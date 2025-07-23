@@ -133,7 +133,7 @@ pub fn solve_ivp<T: OdeState + 'static, I: Integrator<T>>(
         sol.y.push(y.clone());
 
         // Perform event detection. TODO this should be done in the event manager.
-        if let Some(event_manager) = event_manager {
+        if let Some(event_manager) = event_manager.as_deref_mut() {
             // Get the step size to reach the first detected event (if one was detected) and the
             // corresponding index of the event in the vector of events.
             let (idx_event, h_event) =
@@ -165,24 +165,23 @@ pub fn solve_ivp<T: OdeState + 'static, I: Integrator<T>>(
                 sol.t[i] = t_event;
                 sol.y[i] = y_event;
 
-                // Extract the event that was detected.
-                let event = &mut events[idx_event];
-
                 // Store the time and the value of the state when the event was detected.
                 //  --> Note that if a state reset is done, this still stores the value at the event
                 //      before the state reset.
-                event.store(t_event, &y); // TODO this should be stored in the solution struct along with the index and name of the event
+                event_manager.store(t_event, &y_event, idx_event);
 
                 // Break the integration loop if the number of detections has reached the number of
                 // detections requiring termination.
                 //  --> Note that no state reset is done in this case.
                 // TODO: num_detections could be stored in EventManager
-                if event.num_detections == event.termination.num_detections {
+                if event_manager.num_detections[idx_event]
+                    == event_manager[idx_event].termination.num_detections
+                {
                     break;
                 }
 
                 // Reset the state.
-                if let Some(s) = &event.s {
+                if let Some(s) = &event_manager[idx_event].s {
                     sol.y[i] = s(t_event, &y);
                 }
             }
@@ -249,8 +248,11 @@ mod tests {
         // Event.
         let event = Event::new(|_t: f64, y: &f64| y - 3.5);
 
+        // Event manager.
+        let mut event_manager = EventManager::new(vec![&event]);
+
         // Solve the initial value problem. // TODO: don't modify event stuff, rather store in the solution struct
-        let sol = solve_ivp::<f64, Euler>(&f, t0, &y0, tf, h, Some(&mut vec![event]));
+        let sol = solve_ivp::<f64, Euler>(&f, t0, &y0, tf, h, Some(&mut event_manager));
 
         // Check the results.
         assert_eq!(sol.t, [0.0, 1.0, 1.7499999999999998]);
