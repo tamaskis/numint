@@ -101,7 +101,7 @@ pub fn solve_ivp<T: OdeState + 'static, I: Integrator<T>>(
     y0: &T,
     tf: f64,
     mut h: f64,
-    mut event_manager: Option<&EventManager<T>>,
+    mut event_manager: Option<&mut EventManager<T>>,
 ) -> Solution<T> {
     // Initialize the struct to store the solution. This:
     //  --> Preallocates memory for the time and solution vectors.
@@ -163,7 +163,7 @@ pub fn solve_ivp<T: OdeState + 'static, I: Integrator<T>>(
 
                 // Store the solution at the event.
                 sol.t[i] = t_event;
-                sol.y[i] = y_event;
+                sol.y[i] = y_event.clone();
 
                 // Store the time and the value of the state when the event was detected.
                 //  --> Note that if a state reset is done, this still stores the value at the event
