@@ -1,5 +1,6 @@
 use crate::events::event::Event;
 use crate::events::event_detection::detect_events;
+use crate::events::event_manager::EventManager;
 use crate::integrators::integrator_trait::Integrator;
 use crate::ode_state::ode_state_trait::OdeState;
 use crate::solution::Solution;
@@ -100,7 +101,7 @@ pub fn solve_ivp<T: OdeState + 'static, I: Integrator<T>>(
     y0: &T,
     tf: f64,
     mut h: f64,
-    mut events: Option<&mut Vec<Event<T>>>,
+    mut event_manager: Option<&EventManager<T>>,
 ) -> Solution<T> {
     // Initialize the struct to store the solution. This:
     //  --> Preallocates memory for the time and solution vectors.
@@ -132,11 +133,11 @@ pub fn solve_ivp<T: OdeState + 'static, I: Integrator<T>>(
         sol.y.push(y.clone());
 
         // Perform event detection. TODO this should be done in the event manager.
-        if let Some(events) = events.as_deref_mut() {
+        if let Some(event_manager) = event_manager {
             // Get the step size to reach the first detected event (if one was detected) and the
             // corresponding index of the event in the vector of events.
             let (idx_event, h_event) =
-                detect_events::<T, I>(f, events, sol.t[i - 1], &sol.y[i - 1], &y, h);
+                event_manager.detect_events::<I>(f, sol.t[i - 1], &sol.y[i - 1], &y, h);
 
             // If an event was detected, propagate to the event, store the event information, and
             // terminate integration if necessary.
