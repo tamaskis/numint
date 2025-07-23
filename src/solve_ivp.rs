@@ -17,7 +17,7 @@ use crate::solution::Solution;
 /// * `y0` - Initial condition.
 /// * `tf` - Final time.
 /// * `h` - Time step.
-/// * `events` - Events.
+/// * `event_manager` - Event manager.
 ///
 /// # Returns
 ///
@@ -32,6 +32,12 @@ use crate::solution::Solution;
 /// | scalar-valued | $$\frac{dy}{dt}=f(t,y)\quad\quad\left\(f:\mathbb{R}\times\mathbb{R}\to\mathbb{R}\right\)$$ | $$y(t_{0})=y_{0}\quad\quad\left(y_{0}\in\mathbb{R}\right)$$ |
 /// | vector-valued | $$\frac{d\mathbf{y}}{dt}=\mathbf{f}(t,\mathbf{y})\quad\quad\left\(\mathbf{f}:\mathbb{R}\times\mathbb{R}^{p}\to\mathbb{R}^{p}\right\)$$ | $$\mathbf{y}(t_{0})=\mathbf{y}\_{0}\quad\quad\left(\mathbf{y}_{0}\in\mathbb{R}^{p}\right)$$ |
 /// | matrix-valued | $$\frac{d\mathbf{Y}}{dt}=\mathbf{F}(t,\mathbf{Y})\quad\quad\left\(\mathbf{F}:\mathbb{R}\times\mathbb{R}^{p\times r}\to\mathbb{R}^{p\times r}\right\)$$ | $$\mathbf{Y}(t_{0})=\mathbf{Y}\_{0}\quad\quad\left(\mathbf{Y}_{0}\in\mathbb{R}^{p\times r}\right)$$ |
+///
+/// # Note
+///
+/// The solution will always include the final time point `t_end`, even if this requires taking a
+/// smaller final step than the specified step size. This ensures that the solution covers the
+/// entire integration interval exactly.
 ///
 /// # Examples
 ///
@@ -130,7 +136,7 @@ pub fn solve_ivp<T: OdeState + 'static, I: Integrator<T>>(
         // Store the solution at the current sample time.
         sol.y.push(y.clone());
 
-        // Perform event detection. TODO this should be done in the event manager.
+        // Perform event detection.
         if let Some(event_manager) = event_manager.as_deref_mut() {
             // Get the step size to reach the first detected event (if one was detected) and the
             // corresponding index of the event in the vector of events.
@@ -139,22 +145,21 @@ pub fn solve_ivp<T: OdeState + 'static, I: Integrator<T>>(
 
             // If an event was detected, propagate to the event, store the event information, and
             // terminate integration if necessary.
-            //  --> TODO: probably best to break some of this stuff out into helper functions to
-            //            make unit testing way easier
             if let (Some(idx_event), Some(h_event)) = (idx_event, h_event) {
-                // Event time.
-                let t_event = sol.t[i - 1] + h_event;
-
                 // Propagate the state to the event.
                 //  --> If the event is exactly at the previous time or the current time, don't
                 //      perform any propagation (since we already know the corresponding states at
                 //      those times).
+                let t_event;
                 let mut y_event;
                 if h_event == 0.0 {
+                    t_event = sol.t[i - 1];
                     y_event = sol.y[i - 1].clone();
                 } else if h_event == h {
+                    t_event = sol.t[i];
                     y_event = sol.y[i].clone();
                 } else {
+                    t_event = sol.t[i - 1] + h_event;
                     y_event = sol.y[i - 1].clone();
                     I::propagate(f, sol.t[i - 1], h_event, &mut y_event);
                 }
@@ -171,7 +176,6 @@ pub fn solve_ivp<T: OdeState + 'static, I: Integrator<T>>(
                 // Break the integration loop if the number of detections has reached the number of
                 // detections requiring termination.
                 //  --> Note that no state reset is done in this case.
-                // TODO: num_detections could be stored in EventManager
                 if event_manager.num_detections[idx_event]
                     == event_manager[idx_event].termination.num_detections
                 {
@@ -197,13 +201,103 @@ mod tests {
     use super::*;
     use crate::Euler;
     use crate::StateIndex;
-    use crate::events::event::Event;
+    use crate::events::event::{Event, Termination};
+    use crate::events::event_manager::EventManager;
     use numtest::*;
 
     #[cfg(feature = "nalgebra")]
     use nalgebra::{DVector, SMatrix, dvector};
 
-    // TODO: test with the state being reset
+    #[test]
+    fn test_solve_ivp_event_at_current_time() {
+        // Function defining the ODE: dy/dt = y.
+        let f = |_t: f64, y: &f64| *y;
+
+        // Initial condition.
+        let y0 = 1.0;
+
+        // Initial and final time.
+        let t0 = 0.0;
+        let tf = 3.0;
+
+        // Time step.
+        let h = 1.0;
+
+        // Event that triggers at exactly t = 1.0.
+        let event = Event::new(|t: f64, _y: &f64| t - 1.0);
+
+        // Event manager.
+        let mut event_manager = EventManager::new(vec![&event]);
+
+        // Solve the initial value problem.
+        let sol = solve_ivp::<f64, Euler>(&f, t0, &y0, tf, h, Some(&mut event_manager));
+
+        // Check that the event is detected exactly at t = 1.0.
+        assert!(sol.t.contains(&1.0));
+        assert!(sol.y.len() >= 2);
+    }
+
+    #[test]
+    fn test_solve_ivp_event_at_previous_time() {
+        // Function defining the ODE: dy/dt = y.
+        let f = |_t: f64, y: &f64| *y;
+
+        // Initial condition.
+        let y0 = 1.0;
+
+        // Initial and final time.
+        let t0 = 0.0;
+        let tf = 2.0;
+
+        // Time step.
+        let h = 1.0;
+
+        // Event that triggers at exactly t = 0.0.
+        let event = Event::new(|t: f64, _y: &f64| t - 0.0);
+
+        // Event manager.
+        let mut event_manager = EventManager::new(vec![&event]);
+
+        // Solve the initial value problem.
+        let sol = solve_ivp::<f64, Euler>(&f, t0, &y0, tf, h, Some(&mut event_manager));
+
+        // Check that the event is detected at t = 0.0.
+        assert_eq!(sol.t[0], 0.0);
+    }
+
+    #[test]
+    fn test_solve_ivp_event_between_time_steps() {
+        // Function defining the ODE: dy/dt = y.
+        let f = |_t: f64, y: &f64| *y;
+
+        // Initial condition.
+        let y0 = 1.0;
+
+        // Initial and final time.
+        let t0 = 0.0;
+        let tf = 3.0;
+
+        // Time step.
+        let h = 1.0;
+
+        // Event that triggers when y reaches 1.5 (occurs between t = 0 and t = 1).
+        let event = Event::new(|_t: f64, y: &f64| y - 1.5);
+
+        // Event manager.
+        let mut event_manager = EventManager::new(vec![&event]);
+
+        // Solve the initial value problem.
+        let sol = solve_ivp::<f64, Euler>(&f, t0, &y0, tf, h, Some(&mut event_manager));
+
+        // Check that the event is detected between t = 0 and t = 1.
+        assert!(sol.t.len() >= 2);
+        let event_time = sol.t.last().unwrap();
+        assert!(*event_time > 0.0 && *event_time < 1.0);
+
+        // Check that the event state is approximately correct.
+        let event_state = sol.y.last().unwrap();
+        assert_equal_to_decimal!(*event_state, 1.5, 10);
+    }
 
     /// https://en.wikipedia.org/wiki/Euler_method#Using_step_size_equal_to_1_(h_=_1)s
     #[test]
@@ -250,12 +344,50 @@ mod tests {
         // Event manager.
         let mut event_manager = EventManager::new(vec![&event]);
 
-        // Solve the initial value problem. // TODO: don't modify event stuff, rather store in the solution struct
+        // Solve the initial value problem.
         let sol = solve_ivp::<f64, Euler>(&f, t0, &y0, tf, h, Some(&mut event_manager));
 
         // Check the results.
         assert_eq!(sol.t, [0.0, 1.0, 1.7499999999999998]);
         assert_eq!(sol.y, [1.0, 2.0, 3.4999999999999996]);
+    }
+
+    #[test]
+    fn test_solve_ivp_state_reset() {
+        // Function defining the ODE: dy/dt = -y (exponential decay).
+        let f = |_t: f64, y: &f64| -y;
+
+        // Initial condition.
+        let y0 = 10.0;
+
+        // Initial and final time.
+        let t0 = 0.0;
+        let tf = 3.0;
+
+        // Time step.
+        let h = 0.5;
+
+        // Event that triggers when y drops below 5.0 and resets y to 10.0.
+        let event = Event::new(|_t: f64, y: &f64| y - 5.0)
+            .s(|_t: f64, _y: &f64| 10.0)
+            .termination(Termination::new(0));
+
+        // Event manager.
+        let mut event_manager = EventManager::new(vec![&event]);
+
+        // Solve the initial value problem.
+        let sol = solve_ivp::<f64, Euler>(&f, t0, &y0, tf, h, Some(&mut event_manager));
+
+        // Check that the final state is much higher than it would be without reset.
+        let final_y = sol.y.last().unwrap();
+        assert!(*final_y > 3.0);
+
+        // Check that the event was detected at least once.
+        assert!(event_manager.num_detections[0] > 0);
+
+        // Check that multiple values in the solution are around 10.0 due to resets.
+        let values_near_10 = sol.y.iter().filter(|&&y| (y - 10.0).abs() < 1.0).count();
+        assert!(values_near_10 >= 2);
     }
 
     #[test]

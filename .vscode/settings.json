@@ -9,5 +9,6 @@
     },
     // Linting.
     "rust-analyzer.check.command": "clippy",
-    "rust-analyzer.check.features": "all"   // Note: this should also be set in the global settings.json.
+    "rust-analyzer.cargo.features": "all",  // Ensures all #[cfg(feature = "...")] blocks are active in analysis.
+    "rust-analyzer.check.features": "all",  // Ensures cargo check runs with all features enabled.
 }

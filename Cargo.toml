@@ -1,6 +1,6 @@
 [package]
 name = "numint"
-version = "0.2.0-beta.0"
+version = "0.2.0"
 authors = ["Tamas Kis"]
 edition = "2024"
 description = "ODE solvers and numerical integration in Rust."
@@ -31,13 +31,13 @@ ndarray = [
 ]
 
 [dependencies]
-linalg-traits = "0.12.0"
-faer = { version = "0.22.6", optional = true }
-faer-traits = { version = "0.22.1", optional = true }
-nalgebra = { version = "0.33.2", optional = true }
-ndarray = { version = "0.16.1", optional = true }
+linalg-traits = "0.14.0"
+faer = { version = "0.24.0", optional = true }
+faer-traits = { version = "0.24.0", optional = true }
+nalgebra = { version = "0.34.1", optional = true }
+ndarray = { version = "0.17.2", optional = true }
 num-traits = "0.2.19"
-rootfinder = "0.4.0"
+rootfinder = "0.5.1"
 
 [dev-dependencies]
-numtest = "0.3.0"
+numtest = "0.4.1"

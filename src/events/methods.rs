@@ -174,10 +174,6 @@ pub enum EventDetectionMethod {
 /// * `Some` contains a tuple with the values of the event function at the previous and current
 ///   times and states.
 /// * `None` indicates that the event wasn't detected.
-///
-/// # TODO
-///
-/// Unit test
 fn event_detection_helper<T: OdeState>(
     event: &Event<T>,
     t_prev: f64,
@@ -446,13 +442,12 @@ mod tests {
         let t_prev = 0.0;
         let y_prev = 1.0;
 
-        // Define the current state.
-        //  --> Note that this is the true solution, but it is ok because this value is only used
-        //      for a sign check.   TODO use integration instead
-        let y_curr = 1.0_f64.exp();
-
         // Define the step size.
         let h = 1.0;
+
+        // Define the current state using numerical integration instead of analytical solution.
+        let mut y_curr = y_prev;
+        Euler::propagate(&f, t_prev, h, &mut y_curr);
 
         // Check with exact event detection.
         let h_event_exact =
@@ -474,6 +469,100 @@ mod tests {
         let h_event_right =
             right_event_detection::<f64>(&event, t_prev, &y_prev, &y_curr, h).unwrap();
         assert_eq!(h_event_right, h);
+    }
+
+    #[test]
+    fn test_event_detection_helper_1() {
+        // Define the event with event function g(t,y) = y - t - 0.5.
+        let event = Event::new(|t: f64, y: &f64| y - t - 0.5);
+
+        // Define the previous and current sample times and states.
+        let t_prev = 0.0;
+        let y_prev = 1.0; // g_prev = 1.0 - 0.0 - 0.5 = 0.5
+        let y_curr = 1.5; // g_curr = 1.5 - 1.0 - 0.5 = 0.0
+        let h = 1.0;
+
+        // Check that the event is detected and verify the event function values.
+        let result = event_detection_helper(&event, t_prev, &y_prev, &y_curr, h);
+        assert!(result.is_some());
+        let (g_prev, g_curr) = result.unwrap();
+        assert_equal_to_decimal!(g_prev, 0.5, 15);
+        assert_equal_to_decimal!(g_curr, 0.0, 15);
+    }
+
+    #[test]
+    fn test_event_detection_helper_2() {
+        // Define the event with event function g(t,y) = y - t - 0.5, configured to only detect
+        // decreasing events.
+        let event = Event::new(|t: f64, y: &f64| y - t - 0.5).direction(Direction::Decreasing);
+
+        // Define the previous and current sample times and states.
+        let t_prev = 0.0;
+        let y_prev = 1.0; // g_prev = 1.0 - 0.0 - 0.5 = 0.5
+        let y_curr = 1.5; // g_curr = 1.5 - 1.0 - 0.5 = 0.0
+        let h = 1.0;
+
+        // Check that the event is detected since g(t,y) decreases from 0.5 to 0.0.
+        let result = event_detection_helper(&event, t_prev, &y_prev, &y_curr, h);
+        assert!(result.is_some());
+        let (g_prev, g_curr) = result.unwrap();
+        assert_equal_to_decimal!(g_prev, 0.5, 15);
+        assert_equal_to_decimal!(g_curr, 0.0, 15);
+    }
+
+    #[test]
+    fn test_event_detection_helper_3() {
+        // Define the event with event function g(t,y) = y - t - 0.5, configured to only detect
+        // decreasing events.
+        let event = Event::new(|t: f64, y: &f64| y - t - 0.5).direction(Direction::Decreasing);
+
+        // Define the previous and current sample times and states.
+        let t_prev = 0.0;
+        let y_prev = 0.5; // g_prev = 0.5 - 0.0 - 0.5 = 0.0
+        let y_curr = 1.5; // g_curr = 1.5 - 1.0 - 0.5 = 0.0
+        let h = 1.0;
+
+        // Check that no event is detected since g(t,y) does not change (stays at 0.0).
+        let result = event_detection_helper(&event, t_prev, &y_prev, &y_curr, h);
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_event_detection_helper_4() {
+        // Define the event with event function g(t,y) = y - t - 0.5, configured to only detect
+        // increasing events.
+        let event = Event::new(|t: f64, y: &f64| y - t - 0.5).direction(Direction::Increasing);
+
+        // Define the previous and current sample times and states.
+        let t_prev = 0.0;
+        let y_prev = 0.0; // g_prev = 0.0 - 0.0 - 0.5 = -0.5
+        let y_curr = 1.5; // g_curr = 1.5 - 1.0 - 0.5 = 0.0
+        let h = 1.0;
+
+        // Check that the event is detected since g(t,y) increases from -0.5 to 0.0.
+        let result = event_detection_helper(&event, t_prev, &y_prev, &y_curr, h);
+        assert!(result.is_some());
+        let (g_prev, g_curr) = result.unwrap();
+        assert_equal_to_decimal!(g_prev, -0.5, 15);
+        assert_equal_to_decimal!(g_curr, 0.0, 15);
+    }
+
+    #[test]
+    fn test_event_detection_helper_5() {
+        // Define the event with event function g(t,y) = y - t - 0.5, configured to only detect
+        // increasing events.
+        let event = Event::new(|t: f64, y: &f64| y - t - 0.5).direction(Direction::Increasing);
+
+        // Define the previous and current sample times and states.
+        let t_prev = 0.0;
+        let y_prev = 1.0; // g_prev = 1.0 - 0.0 - 0.5 = 0.5
+        let y_curr = 1.5; // g_curr = 1.5 - 1.0 - 0.5 = 0.0
+        let h = 1.0;
+
+        // Check that no event is detected since g(t,y) decreases from 0.5 to 0.0, but the event
+        // is configured to only trigger when g(t,y) increases.
+        let result = event_detection_helper(&event, t_prev, &y_prev, &y_curr, h);
+        assert!(result.is_none());
     }
 
     #[test]

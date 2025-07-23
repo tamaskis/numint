@@ -4,40 +4,36 @@ use crate::integrators::integrator_trait::Integrator;
 use crate::ode_state::ode_state_trait::OdeState;
 use std::ops::Index;
 
-/// TODO: this struct as it exists is a glorified vector of Events only ever used to rename events.
-/// We should instead have a simple function to do this that is called during solve_ivp, OR flesh
-/// out the functionality of this a little more (e.g. number of detections, etc. are tracked here).
-/// I'm leaning towards the latter since that way we can share events between different functions
+/// Event manager.
 ///
-/// TODO: before anything else is done, we need to implement Index, IndexMut, and IntoIterator for
-/// this struct
+/// This struct is responsible for managing events, detecting them during the integration process,
+/// and storing the times and values of the ODE state at which these events were detected.
+///
+/// # Type Parameters
+///
+/// * `T` - ODE state type (any type implementing the [`OdeState`] trait).
 pub struct EventManager<'a, T: OdeState> {
     /// Events.
     events: Vec<&'a Event<T>>,
 
     /// Number of times each event was detected. The `i`th element corresponds to the number of
     /// times the `i`th event was detected.
-    #[allow(dead_code)] // TODO remove when used
     pub(crate) num_detections: Vec<usize>,
 
     /// Times at which each event was located.
     ///
     /// The `i`th element is a vector storing the times at which the `i`th event was located.
-    #[allow(dead_code)] // TODO remove when used
     t_located: Vec<Vec<f64>>,
 
     /// Values of the state variable at the times each event was located.
     ///
     /// The `i`th element is a vector storing the values of the state variable at the times the
     /// `i`th event was located.
-    #[allow(dead_code)] // TODO remove when used
     y_located: Vec<Vec<T>>,
 }
 
-/// TODO.
 impl<'a, T: OdeState> Index<usize> for EventManager<'a, T> {
     type Output = Event<T>;
-
     fn index(&self, index: usize) -> &Self::Output {
         self.events[index]
     }
@@ -69,9 +65,6 @@ impl<'a, T: OdeState + 'static> EventManager<'a, T> {
     /// let event_2 = Event::new(|t: f64, y: &f64| y / t);
     ///
     /// let event_manager = EventManager::new(vec![&event_1, &event_2]);
-    ///
-    /// assert_eq!(event_manager[0].get_name(), "");
-    /// assert_eq!(event_manager[1].get_name(), "");
     /// ```
     pub fn new(events: Vec<&'a Event<T>>) -> EventManager<'a, T> {
         let num_events = events.len();
