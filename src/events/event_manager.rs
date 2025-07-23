@@ -1,4 +1,6 @@
 use crate::events::event::Event;
+use crate::events::event_detection::detect_event;
+use crate::integrators::integrator_trait::Integrator;
 use crate::ode_state::ode_state_trait::OdeState;
 use std::ops::Index;
 
@@ -80,6 +82,117 @@ impl<'a, T: OdeState + 'static> EventManager<'a, T> {
             y_located: vec![vec![]; num_events],
         }
     }
+}
+
+impl<T: OdeState + 'static> EventManager<'_, T> {
+    /// Detect the first occurence of an event within a time step.
+    ///
+    /// # Type Parameters
+    ///
+    /// * `T` - ODE state type (any type implementing the [`OdeState`] trait).
+    /// * `I` - Integrator type (any type implementing the [`Integrator`] trait).
+    ///
+    /// # Arguments
+    ///
+    /// * `f` - Function defining the ordinary differential equation, `dy/dt = f(t,y)`. See the
+    ///   [Overview](crate#overview) section in the documentation for more information.
+    /// * `events` - Events to detect.
+    /// * `t_prev` - Previous sample time.
+    /// * `y_prev` - Previous state (i.e. solution at the previous sample time).
+    /// * `y_curr` - Current state (i.e. solution at the current sample time).
+    /// * `h` - Step size.
+    ///
+    /// # Returns
+    ///
+    /// * `idx_event` - An option where:
+    ///
+    ///     * `Some` - The index of `events` corresponding to the first event that was detected.
+    ///     * `None` - Indicates that no events were detected.
+    ///
+    /// * `h_event` - An option where:
+    ///
+    ///     * `Some` - The step size required to advance from the current sample time to the first
+    ///       detected event.
+    ///     * `None` - Indicates that no events were detected.
+    pub(crate) fn detect_events<I: Integrator<T>>(
+        &mut self,
+        f: &impl Fn(f64, &T) -> T,
+        t_prev: f64,
+        y_prev: &T,
+        y_curr: &T,
+        h: f64,
+    ) -> (Option<usize>, Option<f64>) {
+        // Initialize a vector to store the step sizes required to reach each of the events, or None
+        // for events that aren't detected.
+        let mut h_events: Vec<Option<f64>> = vec![];
+
+        // Get a fresh reborrow of "events" (into_iter will perform a move since Event does not
+        // implement copy, and we will need to modify an event in a subsequent step).
+        let events_fresh = &mut *self.events;
+
+        // Try detecting each event.
+        for event in events_fresh {
+            h_events.push(detect_event::<T, I>(f, event, t_prev, y_prev, y_curr, h));
+        }
+
+        // Identify the first event that was detected.
+        let (idx_event, h_event) = identify_first_event(&h_events);
+
+        // Update the number of detections.
+        if let Some(idx_event) = idx_event {
+            self.num_detections[idx_event] += 1;
+        }
+
+        (idx_event, h_event)
+    }
+}
+
+/// Helper function to identify the first detected event.
+///
+/// # Arguments
+///
+/// * `h_events` - A slice of options where:
+///
+///     * `Some` - The step size required to advance from the current sample time to the detected
+///       event.
+///     * `None` - Indicates that the event was not detected.
+///
+/// # Returns
+///
+/// * `idx_event` - An option where:
+///
+///     * `Some` - The index of `h_events` corresponding to the first event that was detected.
+///     * `None` - Indicates that no events were detected.
+///
+/// * `h_event` - An option where:
+///
+///     * `Some` - The step size required to advance from the current sample time to the first
+///       detected event.
+///     * `None` - Indicates that no events were detected.
+fn identify_first_event(h_events: &[Option<f64>]) -> (Option<usize>, Option<f64>) {
+    // Initialize both the index and the corresponding step size to None.
+    let mut idx_min: Option<usize> = None;
+    let mut h_min = None;
+
+    // Iterate over each event.
+    for (idx, h) in h_events.iter().enumerate() {
+        // Skip to the next iteration if the current event wasn't detected.
+        if h.is_none() {
+            continue;
+        }
+
+        // Extract the step size to reach this event.
+        let h = *h.as_ref().unwrap();
+
+        // If the step size to reach this event is shorter than the step size to reach the currently
+        // tracked first event, then we need to update the first event to be this event.
+        if h_min.is_none() || h < h_min.unwrap() {
+            idx_min = Some(idx);
+            h_min = Some(h);
+        }
+    }
+
+    (idx_min, h_min)
 }
 
 #[cfg(test)]

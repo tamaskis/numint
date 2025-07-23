@@ -29,7 +29,7 @@ use crate::ode_state::ode_state_trait::OdeState;
 ///
 /// * `Some` - The step size required to advance from the current sample time to the event.
 /// * `None` - Indicates that the event wasn't found.
-fn detect_event<T: OdeState, I: Integrator<T>>(
+pub(crate) fn detect_event<T: OdeState, I: Integrator<T>>(
     f: &impl Fn(f64, &T) -> T,
     event: &Event<T>,
     t_prev: f64,
