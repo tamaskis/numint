@@ -18,7 +18,7 @@ pub struct EventManager<'a, T: OdeState> {
     /// Number of times each event was detected. The `i`th element corresponds to the number of
     /// times the `i`th event was detected.
     #[allow(dead_code)] // TODO remove when used
-    num_detections: Vec<usize>,
+    pub(crate) num_detections: Vec<usize>,
 
     /// Times at which each event was located.
     ///
@@ -89,14 +89,12 @@ impl<T: OdeState + 'static> EventManager<'_, T> {
     ///
     /// # Type Parameters
     ///
-    /// * `T` - ODE state type (any type implementing the [`OdeState`] trait).
     /// * `I` - Integrator type (any type implementing the [`Integrator`] trait).
     ///
     /// # Arguments
     ///
     /// * `f` - Function defining the ordinary differential equation, `dy/dt = f(t,y)`. See the
     ///   [Overview](crate#overview) section in the documentation for more information.
-    /// * `events` - Events to detect.
     /// * `t_prev` - Previous sample time.
     /// * `y_prev` - Previous state (i.e. solution at the previous sample time).
     /// * `y_curr` - Current state (i.e. solution at the current sample time).
@@ -144,6 +142,24 @@ impl<T: OdeState + 'static> EventManager<'_, T> {
         }
 
         (idx_event, h_event)
+    }
+
+    /// Store the time and the value of the ODE state at an occurence of this event.
+    ///
+    /// # Arguments
+    ///
+    /// * `t` - Time at the occurence of this event.
+    /// * `y` - Value of the ODE state at the occurence of this event.
+    /// * `idx_event` - Index of the event in the `events` vector.
+    ///
+    /// # Note
+    ///
+    /// This method is only responsible for storing the time of an event and the corresponding value
+    /// of the ODE state. [`crate::events::event_detection::detect_events`] is responsible for
+    /// updating the number of time this event was detected.
+    pub(crate) fn store(&mut self, t: f64, y: &T, idx_event: usize) {
+        self.t_located[idx_event].push(t);
+        self.y_located[idx_event].push(y.clone());
     }
 }
 
@@ -248,6 +264,21 @@ mod tests {
         assert_eq!(idx_event, 1);
         assert_equal_to_decimal!(h_event.unwrap(), 0.25, 15);
         assert_eq!(event_manager.num_detections[idx_event], 1);
+    }
+
+    #[test]
+    fn test_store() {
+        let g = |t: f64, y: &f64| y * t;
+        let event = Event::new(g);
+        let mut event_manager = EventManager::new(vec![&event]);
+        assert_eq!(event_manager.t_located[0], vec![]);
+        assert_eq!(event_manager.y_located[0], vec![]);
+        event_manager.store(0.5, &1.5, 0);
+        assert_eq!(event_manager.t_located[0], vec![0.5]);
+        assert_eq!(event_manager.y_located[0], vec![1.5]);
+        event_manager.store(1.0, &5.0, 0);
+        assert_eq!(event_manager.t_located[0], vec![0.5, 1.0]);
+        assert_eq!(event_manager.y_located[0], vec![1.5, 5.0]);
     }
 
     #[test]

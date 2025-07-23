@@ -201,15 +201,6 @@ pub struct Event<T: OdeState> {
     /// Name of the event.
     pub(crate) name: String,
 
-    /// Number of times this event has been detected.
-    pub(crate) num_detections: usize,
-
-    /// Times at which the event was located.
-    pub(crate) t_located: Vec<f64>,
-
-    /// Values of the ODE state at the times at which the event was located.
-    pub(crate) y_located: Vec<T>,
-
     /// Tracks unused generic parameters.
     _phantom: PhantomData<T>,
 }
@@ -250,9 +241,6 @@ impl<T: OdeState + 'static> Event<T> {
             termination: Termination::default(),
             method: EventDetectionMethod::Exact,
             name: "".to_string(),
-            num_detections: 0,
-            t_located: vec![],
-            y_located: vec![],
             _phantom: PhantomData,
         }
     }
@@ -427,23 +415,6 @@ impl<T: OdeState + 'static> Event<T> {
     pub fn get_name(&self) -> &str {
         &self.name
     }
-
-    /// Store the time and the value of the ODE state at an occurence of this event.
-    ///
-    /// # Arguments
-    ///
-    /// * `t` - Time at the occurence of this event.
-    /// * `y` - Value of the ODE state at the occurence of this event.
-    ///
-    /// # Note
-    ///
-    /// This method is only responsible for storing the time of an event and the corresponding value
-    /// of the ODE state. [`crate::events::event_detection::detect_events`] is responsible for
-    /// updating the number of time this event was detected.
-    pub(crate) fn store(&mut self, t: f64, y: &T) {
-        self.t_located.push(t);
-        self.y_located.push(y.clone());
-    }
 }
 
 #[cfg(test)]
@@ -478,9 +449,6 @@ mod event_tests {
         assert_eq!(event.termination.num_detections, 1);
         assert!(matches!(event.method, EventDetectionMethod::Exact));
         assert_eq!(event.name, "");
-        assert_eq!(event.num_detections, 0);
-        assert_eq!(event.t_located, vec![]);
-        assert_eq!(event.y_located, vec![]);
     }
 
     #[test]
@@ -540,19 +508,5 @@ mod event_tests {
         let name = String::from("My Event");
         let event = Event::new(g).name(name);
         assert_eq!(event.get_name(), "My Event");
-    }
-
-    #[test]
-    fn test_store() {
-        let g = |t: f64, y: &f64| y * t;
-        let mut event = Event::new(g);
-        assert_eq!(event.t_located, vec![]);
-        assert_eq!(event.y_located, vec![]);
-        event.store(0.5, &1.5);
-        assert_eq!(event.t_located, vec![0.5]);
-        assert_eq!(event.y_located, vec![1.5]);
-        event.store(1.0, &5.0);
-        assert_eq!(event.t_located, vec![0.5, 1.0]);
-        assert_eq!(event.y_located, vec![1.5, 5.0]);
     }
 }
