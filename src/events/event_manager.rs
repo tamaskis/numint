@@ -13,7 +13,7 @@ use std::ops::Index;
 /// this struct
 pub struct EventManager<'a, T: OdeState> {
     /// Events.
-    events: Vec<&'a Event<T>>,
+    events: Vec<&'a Event<T>>, //TODO blank commit
 
     /// Number of times each event was detected. The `i`th element corresponds to the number of
     /// times the `i`th event was detected.
