@@ -198,6 +198,8 @@ fn identify_first_event(h_events: &[Option<f64>]) -> (Option<usize>, Option<f64>
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::RK4;
+    use numtest::*;
 
     #[test]
     fn test_new() {
@@ -214,5 +216,72 @@ mod tests {
         // Verify that the events were automatically named.
         assert_eq!(event_manager[0].name, "");
         assert_eq!(event_manager[1].name, "");
+    }
+
+    #[test]
+    fn test_detect_events_both_events_detected() {
+        // Define an event with the event function g(t,y) = t - 0.5.
+        let event_1 = Event::new(|t: f64, _y: &f64| t - 0.5);
+
+        // Define a second event with event function g(t,y) = t - 0.25.
+        let event_2 = Event::new(|t: f64, _y: &f64| t - 0.25);
+
+        // Define the ODE dy/dt = f(t,y) = y.
+        let f = |_t: f64, y: &f64| *y;
+
+        // Define the previous sample time and the corresponding state.
+        let t_prev = 0.0;
+        let y_prev = 0.0;
+
+        // Define the current state.
+        let y_curr: f64 = 1.0;
+
+        // Define the step size.
+        let h = 1.0;
+
+        let mut event_manager = EventManager::new(vec![&event_1, &event_2]);
+
+        // Check that the event was correctly detected.
+        let (idx_event, h_event) =
+            event_manager.detect_events::<RK4>(&f, t_prev, &y_prev, &y_curr, h);
+        let idx_event = idx_event.unwrap();
+        assert_eq!(idx_event, 1);
+        assert_equal_to_decimal!(h_event.unwrap(), 0.25, 15);
+        assert_eq!(event_manager.num_detections[idx_event], 1);
+    }
+
+    #[test]
+    fn test_identify_first_event_1() {
+        let (idx_event, h_event) = identify_first_event(&[None]);
+        assert!(idx_event.is_none());
+        assert!(h_event.is_none());
+    }
+
+    #[test]
+    fn test_identify_first_event_2() {
+        let (idx_event, h_event) = identify_first_event(&[Some(1.0)]);
+        assert_eq!(idx_event, Some(0));
+        assert_eq!(h_event, Some(1.0));
+    }
+
+    #[test]
+    fn test_identify_first_event_3() {
+        let (idx_event, h_event) = identify_first_event(&[None, Some(1.0)]);
+        assert_eq!(idx_event, Some(1));
+        assert_eq!(h_event, Some(1.0));
+    }
+
+    #[test]
+    fn test_identify_first_event_4() {
+        let (idx_event, h_event) = identify_first_event(&[Some(1.0), None]);
+        assert_eq!(idx_event, Some(0));
+        assert_eq!(h_event, Some(1.0));
+    }
+
+    #[test]
+    fn test_identify_first_event_5() {
+        let (idx_event, h_event) = identify_first_event(&[Some(1.0), None, Some(0.5)]);
+        assert_eq!(idx_event, Some(2));
+        assert_eq!(h_event, Some(0.5));
     }
 }
