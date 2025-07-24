@@ -17,7 +17,7 @@ use crate::solution::Solution;
 /// * `y0` - Initial condition.
 /// * `tf` - Final time.
 /// * `h` - Time step.
-/// * `events` - Events.
+/// * `event_manager` - Event manager.
 ///
 /// # Returns
 ///
@@ -32,6 +32,11 @@ use crate::solution::Solution;
 /// | scalar-valued | $$\frac{dy}{dt}=f(t,y)\quad\quad\left\(f:\mathbb{R}\times\mathbb{R}\to\mathbb{R}\right\)$$ | $$y(t_{0})=y_{0}\quad\quad\left(y_{0}\in\mathbb{R}\right)$$ |
 /// | vector-valued | $$\frac{d\mathbf{y}}{dt}=\mathbf{f}(t,\mathbf{y})\quad\quad\left\(\mathbf{f}:\mathbb{R}\times\mathbb{R}^{p}\to\mathbb{R}^{p}\right\)$$ | $$\mathbf{y}(t_{0})=\mathbf{y}\_{0}\quad\quad\left(\mathbf{y}_{0}\in\mathbb{R}^{p}\right)$$ |
 /// | matrix-valued | $$\frac{d\mathbf{Y}}{dt}=\mathbf{F}(t,\mathbf{Y})\quad\quad\left\(\mathbf{F}:\mathbb{R}\times\mathbb{R}^{p\times r}\to\mathbb{R}^{p\times r}\right\)$$ | $$\mathbf{Y}(t_{0})=\mathbf{Y}\_{0}\quad\quad\left(\mathbf{Y}_{0}\in\mathbb{R}^{p\times r}\right)$$ |
+///
+/// # TODO
+///
+/// * Write a note about including the final time in the solution, even if it requires a different
+///   time step than the specified one.
 ///
 /// # Examples
 ///
@@ -130,7 +135,7 @@ pub fn solve_ivp<T: OdeState + 'static, I: Integrator<T>>(
         // Store the solution at the current sample time.
         sol.y.push(y.clone());
 
-        // Perform event detection. TODO this should be done in the event manager.
+        // Perform event detection.
         if let Some(event_manager) = event_manager.as_deref_mut() {
             // Get the step size to reach the first detected event (if one was detected) and the
             // corresponding index of the event in the vector of events.
@@ -139,22 +144,22 @@ pub fn solve_ivp<T: OdeState + 'static, I: Integrator<T>>(
 
             // If an event was detected, propagate to the event, store the event information, and
             // terminate integration if necessary.
-            //  --> TODO: probably best to break some of this stuff out into helper functions to
-            //            make unit testing way easier
             if let (Some(idx_event), Some(h_event)) = (idx_event, h_event) {
-                // Event time.
-                let t_event = sol.t[i - 1] + h_event;
-
                 // Propagate the state to the event.
                 //  --> If the event is exactly at the previous time or the current time, don't
                 //      perform any propagation (since we already know the corresponding states at
                 //      those times).
+                // TODO: write unit tests that stress this
+                let t_event;
                 let mut y_event;
                 if h_event == 0.0 {
+                    t_event = sol.t[i - 1];
                     y_event = sol.y[i - 1].clone();
                 } else if h_event == h {
+                    t_event = sol.t[i];
                     y_event = sol.y[i].clone();
                 } else {
+                    t_event = sol.t[i - 1] + h_event;
                     y_event = sol.y[i - 1].clone();
                     I::propagate(f, sol.t[i - 1], h_event, &mut y_event);
                 }
@@ -171,7 +176,6 @@ pub fn solve_ivp<T: OdeState + 'static, I: Integrator<T>>(
                 // Break the integration loop if the number of detections has reached the number of
                 // detections requiring termination.
                 //  --> Note that no state reset is done in this case.
-                // TODO: num_detections could be stored in EventManager
                 if event_manager.num_detections[idx_event]
                     == event_manager[idx_event].termination.num_detections
                 {
@@ -250,7 +254,7 @@ mod tests {
         // Event manager.
         let mut event_manager = EventManager::new(vec![&event]);
 
-        // Solve the initial value problem. // TODO: don't modify event stuff, rather store in the solution struct
+        // Solve the initial value problem.
         let sol = solve_ivp::<f64, Euler>(&f, t0, &y0, tf, h, Some(&mut event_manager));
 
         // Check the results.
