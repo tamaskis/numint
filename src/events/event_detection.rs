@@ -38,10 +38,10 @@ pub(crate) fn detect_event<T: OdeState, I: Integrator<T>>(
     h: f64,
 ) -> Option<f64> {
     // Immediately return None if this event was not active at the beginning of this time step.
-    if let Some(c) = &event.c {
-        if !(c)(t_prev, y_curr) {
-            return None;
-        }
+    if let Some(c) = &event.c
+        && !(c)(t_prev, y_curr)
+    {
+        return None;
     }
 
     // Perform the requested method of event detection.
