@@ -900,7 +900,7 @@ dependencies = [
 
 [[package]]
 name = "numint"
-version = "0.2.0"
+version = "0.2.0-alpha.1"
 dependencies = [
  "faer",
  "faer-traits",

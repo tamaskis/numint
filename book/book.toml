@@ -1,0 +1,6 @@
+[book]
+authors = ["Tamas Kis"]
+language = "en"
+multilingual = false
+src = "src"
+title = "numint"
