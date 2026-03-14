@@ -1,3 +1,0 @@
-# Bouncing Ball Example
-
-TODO
