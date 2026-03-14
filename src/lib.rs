@@ -1,8 +1,9 @@
-//! [![github]](https://github.com/tamaskis/numint)&ensp;[![crates-io]](https://crates.io/crates/numint)&ensp;[![docs-rs]](https://docs.rs/numint)
+//! [![github]](https://github.com/tamaskis/numint)&ensp;[![crates-io]](https://crates.io/crates/numint)&ensp;[![docs-rs]](https://docs.rs/numint)&ensp;[![mdbook]](https://tamaskis.github.io/numint/)
 //!
 //! [github]: https://img.shields.io/badge/github-8da0cb?style=for-the-badge&labelColor=555555&logo=github
 //! [crates-io]: https://img.shields.io/badge/crates.io-fc8d62?style=for-the-badge&labelColor=555555&logo=rust
 //! [docs-rs]: https://img.shields.io/badge/docs.rs-66c2a5?style=for-the-badge&labelColor=555555&logo=docs.rs
+//! [mdbook]: https://img.shields.io/badge/mdbook-ffd92f?style=for-the-badge&labelColor=555555&logo=bookstack
 //!
 //! ODE solvers and numerical integration in Rust.
 //!
@@ -87,7 +88,7 @@ pub use crate::events::event_manager::EventManager;
 pub use crate::events::methods::EventDetectionMethod;
 pub use crate::integrators::integrator_trait::Integrator;
 pub use crate::integrators::runge_kutta::{
-    Euler, RK2Heun, RK2Ralston, RK3Heun, RK3Ralston, RK4Ralston, RK2, RK3, RK4, RK438, SSPRK3,
+    Euler, RK2, RK2Heun, RK2Ralston, RK3, RK3Heun, RK3Ralston, RK4, RK4Ralston, RK438, SSPRK3,
 };
 pub use crate::ode_state::ode_state_trait::{OdeState, StateIndex};
 pub use crate::solution::Solution;

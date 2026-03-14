@@ -1,0 +1,29 @@
+name: Book CI
+
+on:
+  push:
+    branches: [ "main" ]  # Run on merges to main.
+
+permissions:
+  contents: write # Needed to push the built book to GitHub Pages.
+  
+jobs:
+    
+  publish_book: # https://github.com/peaceiris/actions-mdbook
+    name: Publish book
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout  # Checkout this repo's code.
+        uses: actions/checkout@v4
+      - name: Install  # Install mdBook.
+        uses: peaceiris/actions-mdbook@v2
+        with:
+          mdbook-version: 'latest'
+      - name: Build  # Build the book.
+        run: mdbook build book
+      - name: Deploy   # Deploy the book on GitHub pages.
+        uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.ref == 'refs/heads/main' }}
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./book/book
