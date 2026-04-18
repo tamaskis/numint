@@ -2,7 +2,7 @@ use crate::ode_state::ode_state_trait::OdeState;
 
 /// Trait defining an integration method.
 pub trait Integrator<T: OdeState> {
-    /// Propagate the state vector forward one time step.
+    /// Propagate the state forward one time step.
     ///
     /// # Arguments
     ///

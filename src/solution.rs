@@ -11,8 +11,8 @@ pub struct Solution<T: OdeState> {
 
     /// State history vector (length-`N`).
     ///
-    /// This vector stores the ODE solution (i.e. the state vector) corresponding to each sample
-    /// time in `t`.
+    /// This vector stores the ODE solution (i.e. the state) corresponding to each sample time in
+    /// `t`.
     pub y: Vec<T>,
 }
 
