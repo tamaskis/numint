@@ -120,7 +120,7 @@ mod tests {
 
         // Check indexing.
         for i in 0..2 {
-            assert_eq!(a.get_state_variable(StateIndex::Vector(i)), a.vget(i));
+            assert_eq!(a.get_state_variable(StateIndex::Vector(i)), a[i]);
         }
     }
 
