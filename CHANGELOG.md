@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.0
+
+1. Updated `linalg-traits` dependency from `0.14.0` to `0.18.0`.
+1. Updated `nalgebra` optional dependency from `0.34.1` to `0.35.0`.
+1. Updated `numtest` dev dependency from `0.4.1` to `0.5.0`.
+1. Updated `faer` optional dependency from `0.24.0` to `0.24.4`.
+
 ## 0.2.0
 
 1. Added event detection.

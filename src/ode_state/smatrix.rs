@@ -1,10 +1,7 @@
-use crate::ode_state::ode_state_trait::{OdeState, StateIndex};
-use linalg_traits::Matrix;
-
 #[cfg(feature = "nalgebra")]
 use nalgebra::SMatrix;
 
-/// Macro to implement the [`OdeState`] trait for statically-sized matrix types.
+/// Macro to implement the [`crate::OdeState`] trait for statically-sized matrix types.
 ///
 /// A type must implement the
 /// [`linalg_traits::Matrix`](https://docs.rs/linalg-traits/latest/linalg_traits/trait.Matrix.html)
@@ -12,13 +9,13 @@ use nalgebra::SMatrix;
 ///
 /// # Arguments
 ///
-/// * `$type:ident` - Type to implement the [`OdeState`] trait for. Do not include any type
+/// * `$type:ident` - Type to implement the [`crate::OdeState`] trait for. Do not include any type
 ///   parameters (e.g. use `SMatrix` instead of `SMatrix<f64, R, C>`).
 ///
 /// # Warning
 ///
-/// We use this macro to implement [`OdeState`] for `nalgebra::SMatrix<f64, R, C>`. However, this
-/// also ends up implementing it for `nalgebra::SVector<f64, N>`, since both of them are type
+/// We use this macro to implement [`crate::OdeState`] for `nalgebra::SMatrix<f64, R, C>`. However,
+/// this also ends up implementing it for `nalgebra::SVector<f64, N>`, since both of them are type
 /// aliases for `nalgebra::Matrix`.
 ///
 /// # Example
@@ -37,8 +34,9 @@ use nalgebra::SMatrix;
 #[macro_export]
 macro_rules! impl_ode_state_for_smatrix {
     ($($type:ident),*) => {
+        use linalg_traits::Matrix;
         $(
-            impl<const R: usize, const C: usize> OdeState for $type<f64, R, C> {
+            impl<const R: usize, const C: usize> $crate::OdeState for $type<f64, R, C> {
                 fn add(&self, other: &Self) -> Self {
                     <Self as Matrix<f64>>::add(self, other)
                 }
@@ -57,11 +55,11 @@ macro_rules! impl_ode_state_for_smatrix {
                 fn mul_assign(&mut self, scalar: f64) {
                     <Self as Matrix<f64>>::mul_assign(self, scalar);
                 }
-                fn get_state_variable(&self, index: StateIndex) -> f64 {
+                fn get_state_variable(&self, index: $crate::StateIndex) -> f64 {
                     match index {
-                        StateIndex::Scalar() => panic!("Cannot index a matrix ODE state with a StateIndex::Scalar."),
-                        StateIndex::Vector(i) => self[i],   // to support nalgebra::SVector
-                        StateIndex::Matrix(i, j) => self[(i, j)]
+                        $crate::StateIndex::Scalar() => panic!("Cannot index a matrix ODE state with a StateIndex::Scalar."),
+                        $crate::StateIndex::Vector(i) => self[i],   // to support nalgebra::SVector
+                        $crate::StateIndex::Matrix(i, j) => self[(i, j)]
                     }
                 }
             }

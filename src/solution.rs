@@ -170,7 +170,7 @@ impl<T: OdeState> Solution<T> {
     pub fn get_state_variable<V: Vector<f64>>(&self, index: &StateIndex) -> V {
         let mut x = V::new_with_length(self.len());
         for (i, y) in self.y.iter().enumerate() {
-            x.vset(i, y.get_state_variable(*index));
+            x[i] = y.get_state_variable(*index);
         }
         x
     }
@@ -246,7 +246,7 @@ mod tests {
 
         // Verify that the initial time and initial condition were stored.
         assert_eq!(sol.t[0], 1.0);
-        assert_eq!(sol.y[0].as_slice(), &[1.0, 2.0]);
+        assert_eq!(sol.y[0].as_slice().as_ref(), &[1.0, 2.0]);
 
         // Verify that nothing has been stored besides the initial time and initial condition.
         assert_eq!(sol.len(), 1);

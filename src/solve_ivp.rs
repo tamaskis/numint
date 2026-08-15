@@ -200,13 +200,13 @@ pub fn solve_ivp<T: OdeState + 'static, I: Integrator<T>>(
 mod tests {
     use super::*;
     use crate::Euler;
+    #[cfg(feature = "nalgebra")]
     use crate::StateIndex;
     use crate::events::event::{Event, Termination};
     use crate::events::event_manager::EventManager;
-    use numtest::*;
-
     #[cfg(feature = "nalgebra")]
     use nalgebra::{DVector, SMatrix, dvector};
+    use numtest::*;
 
     #[test]
     fn test_solve_ivp_event_at_current_time() {
